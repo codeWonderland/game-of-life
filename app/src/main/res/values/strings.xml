@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">project_2</string>
+    <string name="run_sim">Run</string>
+    <string name="reset">Reset</string>
+    <string name="save">Save</string>
+    <string name="load">Load</string>
+    <string name="color_picker">Change Color</string>
 </resources>

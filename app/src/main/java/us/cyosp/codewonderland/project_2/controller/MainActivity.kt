@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
         var fragment = fm.findFragmentById(R.id.fragment_container)
 
         if (fragment == null) {
-            fragment = ColonyFragment()
+            fragment = ColonyRecyclerFragment()
             fm.beginTransaction()
                 .add(R.id.fragment_container, fragment)
                 .commit()

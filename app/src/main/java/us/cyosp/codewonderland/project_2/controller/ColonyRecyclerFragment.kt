@@ -1,35 +1,45 @@
 package us.cyosp.codewonderland.project_2.controller
 
 import android.graphics.Color
-import android.graphics.drawable.ClipDrawable.HORIZONTAL
-import android.graphics.drawable.ClipDrawable.VERTICAL
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.GridLayoutManager
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import us.cyosp.codewonderland.project_2.R
 import android.support.v7.widget.RecyclerView
-import android.util.Log
+import android.view.*
+import android.widget.Button
 import us.cyosp.codewonderland.project_2.model.*
 
-class ColonyFragment : Fragment() {
+class ColonyRecyclerFragment : Fragment() {
 
     companion object {
         var ALIVE: Int = Color.GREEN
         var DEAD: Int = Color.DKGRAY
     }
 
+    private var mRECYCLERVIEW = "recycler_view"
+
     private var mColonyRecyclerView: RecyclerView? = null
     private var mAdapter: ColonyAdapter? = null
+
+    private var mRunButton: Button? = null
+    private var mResetButton: Button? = null
+
+    fun newInstance(): ColonyRecyclerFragment {
+        return ColonyRecyclerFragment()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_colony, container, false)
+        val view = inflater.inflate(R.layout.recycler_view_colony, container, false)
 
         mColonyRecyclerView = view
             .findViewById(R.id.colony_recycler_view) as RecyclerView
@@ -41,9 +51,41 @@ class ColonyFragment : Fragment() {
         mColonyRecyclerView!!.addItemDecoration(DividerItemDecoration(activity,
             DividerItemDecoration.VERTICAL))
 
+        mRunButton = view.findViewById(R.id.run_sim_button) as Button
+        mRunButton!!.setOnClickListener {
+            // TODO: start sim with on click
+        }
+
+        mResetButton = view.findViewById(R.id.reset_sim) as Button
+        mResetButton!!.setOnClickListener {
+            fragmentManager!!.beginTransaction().replace(R.id.fragment_container, ColonyRecyclerFragment()).commit()
+        }
+
         updateUI()
 
         return view
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater!!.inflate(R.menu.menu_fragment, menu)
+        // Todo: Add on create stuff for menu if needed. Remove TODO if not needed
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item!!.itemId) {
+            R.id.color_picker -> {
+                // TODO: Add color picker code here
+            }
+            R.id.save -> {
+                // TODO: Add save pattern code here
+            }
+            R.id.load -> {
+                // TODO: Add load pattern code here
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return false
     }
 
     override fun onResume() {
@@ -52,7 +94,7 @@ class ColonyFragment : Fragment() {
     }
 
     private fun updateColony() {
-
+        // TODO: program update colony
     }
 
     private fun updateUI() {
@@ -70,7 +112,7 @@ class ColonyFragment : Fragment() {
     private inner class CellView(inflater: LayoutInflater, parent: ViewGroup) :
         RecyclerView.ViewHolder(
             inflater.inflate(
-                R.layout.fragment_cell,
+                R.layout.recycler_view_cell,
                 parent,
                 false
             )
@@ -81,22 +123,22 @@ class ColonyFragment : Fragment() {
 
         init {
             itemView.setOnClickListener(this)
-            itemView.setBackgroundColor(ColonyFragment.DEAD)
-            // determine fields
+            itemView.setBackgroundColor(ColonyRecyclerFragment.DEAD)
+            // TODO: determine fields
         }
 
         fun bind(cell: Cell) {
             mCell = cell
-            // determine color stuffs
+            // TODO: determine color stuffs
         }
 
         override fun onClick(view: View) {
             mCell!!.swapState()
 
             if (mCell!!.mAlive) {
-                itemView.setBackgroundColor(ColonyFragment.ALIVE)
+                itemView.setBackgroundColor(ColonyRecyclerFragment.ALIVE)
             } else {
-                itemView.setBackgroundColor(ColonyFragment.DEAD)
+                itemView.setBackgroundColor(ColonyRecyclerFragment.DEAD)
             }
         }
     }
