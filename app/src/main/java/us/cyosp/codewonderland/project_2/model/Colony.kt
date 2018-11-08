@@ -7,6 +7,8 @@ class Colony(context: Context) {
     companion object {
         var sColony: Colony? = null
 
+
+
         operator fun get(context: Context): Colony {
             if (sColony == null) {
                 sColony = Colony(context)
@@ -16,10 +18,12 @@ class Colony(context: Context) {
         }
     }
 
-    private var mCells = ArrayList<ArrayList<Cell>>()
+    private var mCells =  Array(20) { Array(20) { Cell() }}
 
-    fun extract(): ArrayList<ArrayList<Cell>> {
-        return mCells
+    var mRunning = false
+
+    fun extract(): Array<Array<Cell>> {
+        return this.mCells
     }
 
     fun getLivingNeighbors(): Array<Array<Int>> {
@@ -39,7 +43,7 @@ class Colony(context: Context) {
 
                 // Checks to see if the cells are alive or dead. If they are alive
                 // it increments the count for living neighbors.
-                if (mCells[i][j].mAlive) {
+                if (this.mCells[i][j].getState()) {
                     livingNeighborsCount[leftOfRow % rows][leftOfColumn % columns]++
                     livingNeighborsCount[leftOfRow % rows][j % columns]++
                     livingNeighborsCount[(i + rows - 1) % rows][rightOfColumn % columns]++
@@ -55,15 +59,19 @@ class Colony(context: Context) {
         return livingNeighborsCount
     }
 
-    init {
+    fun nextGeneration(livingNeighbors: Array<Array<Int>>) {
         for (i in 0 until 20) {
-            mCells.add(ArrayList())
-
             for (j in 0 until 20) {
-                val cell = Cell()
-                // do init cell code
+                val count = livingNeighbors[i][j]
+                if (count > 3) {
+                    this.mCells[i][j].setDead()
+                } else if (count < 2) {
+                   this.mCells[i][j].setDead()
+                } else if (count == 3) {
+                    this.mCells[i][j].setAlive()
+                }
 
-                mCells[i].add(cell)
+                this.mCells[i][j].age()
             }
         }
     }

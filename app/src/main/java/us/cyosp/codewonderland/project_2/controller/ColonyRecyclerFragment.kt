@@ -14,11 +14,12 @@ import us.cyosp.codewonderland.project_2.model.*
 class ColonyRecyclerFragment : Fragment() {
 
     companion object {
-        var ALIVE: Int = Color.GREEN
-        var DEAD: Int = Color.DKGRAY
+        var ALIVE: Int = R.color.alive_color
+        var DEAD: Int = R.color.dead_color
     }
 
-    private var mRECYCLERVIEW = "recycler_view"
+    private val mRowCount = 20
+    private val mColCount = 20
 
     private var mColonyRecyclerView: RecyclerView? = null
     private var mAdapter: ColonyAdapter? = null
@@ -26,9 +27,7 @@ class ColonyRecyclerFragment : Fragment() {
     private var mRunButton: Button? = null
     private var mResetButton: Button? = null
 
-    fun newInstance(): ColonyRecyclerFragment {
-        return ColonyRecyclerFragment()
-    }
+    private var mRunning: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +52,14 @@ class ColonyRecyclerFragment : Fragment() {
 
         mRunButton = view.findViewById(R.id.run_sim_button) as Button
         mRunButton!!.setOnClickListener {
-            // TODO: start sim with on click
+            this.mRunning = this.mRunning.not()
+
+            // TODO: Fix running. Currently just freezes
+            while(mRunning) {
+                updateColony()
+                updateUI()
+                Thread.sleep(1000)
+            }
         }
 
         mResetButton = view.findViewById(R.id.reset_sim) as Button
@@ -94,7 +100,8 @@ class ColonyRecyclerFragment : Fragment() {
     }
 
     private fun updateColony() {
-        // TODO: program update colony
+        val colony = Colony[activity!!]
+        colony.nextGeneration(colony.getLivingNeighbors())
     }
 
     private fun updateUI() {
@@ -134,20 +141,15 @@ class ColonyRecyclerFragment : Fragment() {
 
         override fun onClick(view: View) {
             mCell!!.swapState()
-
-            if (mCell!!.mAlive) {
-                itemView.setBackgroundColor(ColonyRecyclerFragment.ALIVE)
-            } else {
-                itemView.setBackgroundColor(ColonyRecyclerFragment.DEAD)
-            }
+            itemView.setBackgroundColor(mCell!!.getColor())
         }
     }
 
-    private inner class ColonyAdapter(private val mCells: ArrayList<ArrayList<Cell>>) :
+    private inner class ColonyAdapter(private val mCells: Array<Array<Cell>>) :
         RecyclerView.Adapter<CellView>() {
 
         override fun getItemCount(): Int {
-            return 400
+            return mRowCount * mColCount
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CellView {
@@ -156,7 +158,7 @@ class ColonyRecyclerFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: CellView, position: Int) {
-            val cell = mCells[position / 20][position % 20]
+            val cell = mCells[position / mRowCount][position % mColCount]
             holder.bind(cell)
         }
     }
