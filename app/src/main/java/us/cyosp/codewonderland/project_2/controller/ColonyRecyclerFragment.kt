@@ -1,5 +1,6 @@
 package us.cyosp.codewonderland.project_2.controller
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -55,6 +56,26 @@ class ColonyRecyclerFragment : Fragment() {
         mColonyRecyclerView!!.addItemDecoration(DividerItemDecoration(activity,
             DividerItemDecoration.VERTICAL))
 
+<<<<<<< HEAD
+=======
+        val thread = object : Thread() {
+
+            override fun run() {
+                try {
+                    while (!this.isInterrupted) {
+                        Thread.sleep(1000)
+                        activity!!.runOnUiThread {
+                            updateColony()
+                            updateUI(activity!!)
+                        }
+                    }
+                } catch (e: InterruptedException) {
+                }
+
+            }
+        }
+
+>>>>>>> d6e5035317f2dc08ec494c299b627a22b0ca34be
         mRunButton = view.findViewById(R.id.run_sim_button) as Button
         mRunButton!!.setOnClickListener {
             this.mRunning = this.mRunning.not()
@@ -77,7 +98,7 @@ class ColonyRecyclerFragment : Fragment() {
             fragmentManager!!.beginTransaction().replace(R.id.fragment_container, ColonyRecyclerFragment()).commit()
         }
 
-        updateUI()
+        updateUI(activity!!)
 
         return view
     }
@@ -106,7 +127,7 @@ class ColonyRecyclerFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        updateUI()
+        updateUI(activity!!)
     }
 
     private fun updateColony() {
@@ -114,13 +135,25 @@ class ColonyRecyclerFragment : Fragment() {
         colony.nextGeneration(colony.getLivingNeighbors())
     }
 
+<<<<<<< HEAD
     private fun updateUI() {
+=======
+    private fun updateUI(context: Context) {
+        val colony = Colony[context]
+        val cells = colony.extract()
+
+>>>>>>> d6e5035317f2dc08ec494c299b627a22b0ca34be
         if (mAdapter == null) {
             val cells = Colony(activity!!).extract()
             this.mAdapter = ColonyAdapter(cells)
             mColonyRecyclerView!!.adapter = mAdapter
         } else {
+<<<<<<< HEAD
             activity!!.runOnUiThread { mAdapter!!.notifyDataSetChanged() }
+=======
+            mAdapter!!.updateCells(cells)
+            mAdapter!!.notifyDataSetChanged()
+>>>>>>> d6e5035317f2dc08ec494c299b627a22b0ca34be
         }
     }
 
@@ -144,10 +177,6 @@ class ColonyRecyclerFragment : Fragment() {
 
         fun bind(cell: Cell) {
             mCell = cell
-        }
-
-        fun update(cell: Cell) {
-            this.mCell = cell
 
             if (this.mCell!!.getState()) {
                 itemView.setBackgroundColor(ColonyRecyclerFragment.ALIVE)
@@ -162,7 +191,7 @@ class ColonyRecyclerFragment : Fragment() {
         }
     }
 
-    private inner class ColonyAdapter(var mCells: Array<Array<Cell>>) :
+    private inner class ColonyAdapter(private var mCells: Array<Array<Cell>>) :
         RecyclerView.Adapter<CellView>() {
 
         private var mHolders = Array(20) { Array<CellView?>(20) { null }}
@@ -182,6 +211,19 @@ class ColonyRecyclerFragment : Fragment() {
 
             val cell = mCells[y][x]
             holder.bind(cell)
+
+            mHolders[y][x] = holder
+        }
+
+        fun updateCells(cells: Array<Array<Cell>>) {
+            this.mCells = cells
+
+            for (position in 0 until 400) {
+                val y = position / mRowCount
+                val x = position % mColCount
+
+                mHolders[y][x]?.bind(mCells[y][x])
+            }
         }
     }
 
