@@ -97,6 +97,8 @@ class ColonyRecyclerFragment : Fragment() {
         when (item!!.itemId) {
             R.id.color_picker -> {
                 // TODO: Add color picker code here
+
+                updateUI()
             }
             R.id.save -> {
                 // TODO: Add save pattern code here
@@ -154,30 +156,22 @@ class ColonyRecyclerFragment : Fragment() {
             mCell = Cell()
             itemView.setOnClickListener(this)
 
-            val color = if (mCell.mAlive) {
-                ALIVE
-            } else {
-                DEAD
-            }
-
-            itemView.setBackgroundColor(color)
+            updateColor()
         }
 
         fun bind(cell: Cell) {
             mCell = cell
 
-            val color = if (mCell.mAlive) {
-                ALIVE
-            } else {
-                DEAD
-            }
-
-            itemView.setBackgroundColor(color)
+            updateColor()
         }
 
         override fun onClick(view: View) {
             mCell.swapState()
 
+            updateColor()
+        }
+
+        fun updateColor() {
             val color = if (mCell.mAlive) {
                 ALIVE
             } else {
