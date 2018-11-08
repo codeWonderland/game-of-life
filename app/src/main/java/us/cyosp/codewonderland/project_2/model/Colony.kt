@@ -72,12 +72,11 @@ class Colony {
         for (i in 0 until 20) {
             for (j in 0 until 20) {
                 val count = livingNeighbors[i][j]
-                if (count > 3) {
-                    this.mCells[i][j].setDead()
-                } else if (count < 2) {
-                   this.mCells[i][j].setDead()
-                } else if (count == 3) {
-                    this.mCells[i][j].setAlive()
+
+                when {
+                    count > 3 -> this.mCells[i][j].setDead()
+                    count < 2 -> this.mCells[i][j].setDead()
+                    count == 3 -> this.mCells[i][j].setAlive()
                 }
 
                 this.mCells[i][j].age()
