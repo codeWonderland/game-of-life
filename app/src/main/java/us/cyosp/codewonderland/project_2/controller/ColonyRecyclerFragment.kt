@@ -33,7 +33,7 @@ class ColonyRecyclerFragment : Fragment() {
 
     private var mRunning: Boolean = false
 
-    private var timer = Timer()
+    private var timer: Timer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,18 +56,6 @@ class ColonyRecyclerFragment : Fragment() {
         mColonyRecyclerView!!.addItemDecoration(DividerItemDecoration(activity,
             DividerItemDecoration.VERTICAL))
 
-        fun run() {
-            timer.scheduleAtFixedRate(object : TimerTask() {
-                override fun run() {
-                    updateColony()
-                    activity!!.runOnUiThread { updateUI() }
-                }
-            }, 250, 250)
-
-
-        }
-
-
         mRunButton = view.findViewById(R.id.run_sim_button) as Button
         mRunButton!!.setOnClickListener {
             this.mRunning = this.mRunning.not()
@@ -78,15 +66,18 @@ class ColonyRecyclerFragment : Fragment() {
                 run()
             } else {
                 mRunButton!!.text = activity!!.getText(R.string.run_sim)
-                timer.cancel()
+                timer!!.cancel()
             }
         }
 
         mResetButton = view.findViewById(R.id.reset_sim) as Button
         mResetButton!!.setOnClickListener {
-            timer.cancel()
+            timer?.cancel()
             if (mRunButton!!.text == activity!!.getText(R.string.stop_sim)) {
                 mRunButton!!.text = activity!!.getText(R.string.run_sim)
+                if (this.mRunning) {
+                    this.mRunning = false
+                }
             }
             fragmentManager!!.beginTransaction().replace(R.id.fragment_container, ColonyRecyclerFragment()).commit()
         }
@@ -134,6 +125,17 @@ class ColonyRecyclerFragment : Fragment() {
         } else {
             activity!!.runOnUiThread { mAdapter!!.notifyDataSetChanged() }
         }
+    }
+
+    private fun run() {
+        timer!!.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                updateColony()
+                activity!!.runOnUiThread { updateUI() }
+            }
+        }, 250, 250)
+
+
     }
 
     private inner class CellView(inflater: LayoutInflater, parent: ViewGroup) :
