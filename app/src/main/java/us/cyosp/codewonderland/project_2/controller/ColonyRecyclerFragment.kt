@@ -16,8 +16,8 @@ import java.util.*
 class ColonyRecyclerFragment : Fragment() {
 
     companion object {
-        var ALIVE: Int = R.color.alive_color
-        var DEAD: Int = R.color.dead_color
+        var ALIVE: Int = Color.GREEN
+        var DEAD: Int = Color.GRAY
     }
 
     private val mRowCount = 20
@@ -153,22 +153,42 @@ class ColonyRecyclerFragment : Fragment() {
         init {
             mCell = Cell()
             itemView.setOnClickListener(this)
-            itemView.setBackgroundColor(mCell.getColor())
-            // TODO: determine fields
+
+            val color = if (mCell.mAlive) {
+                ALIVE
+            } else {
+                DEAD
+            }
+
+            itemView.setBackgroundColor(color)
         }
 
         fun bind(cell: Cell) {
             mCell = cell
-            itemView.setBackgroundColor(mCell.getColor())
+
+            val color = if (mCell.mAlive) {
+                ALIVE
+            } else {
+                DEAD
+            }
+
+            itemView.setBackgroundColor(color)
         }
 
         override fun onClick(view: View) {
             mCell.swapState()
-            itemView.setBackgroundColor(mCell.getColor())
+
+            val color = if (mCell.mAlive) {
+                ALIVE
+            } else {
+                DEAD
+            }
+
+            itemView.setBackgroundColor(color)
         }
     }
 
-    private inner class ColonyAdapter() :
+    private inner class ColonyAdapter :
         RecyclerView.Adapter<CellView>() {
 
         override fun getItemCount(): Int {

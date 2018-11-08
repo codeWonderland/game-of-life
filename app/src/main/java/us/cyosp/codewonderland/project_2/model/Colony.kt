@@ -1,21 +1,10 @@
 package us.cyosp.codewonderland.project_2.model
 
 import android.content.Context
+import us.cyosp.codewonderland.project_2.R
 import kotlin.collections.ArrayList
 
 class Colony {
-
-   /* companion object {
-        var sColony: Colony? = null
-
-        operator fun get(context: Context): Colony {
-            if (sColony == null) {
-                sColony = Colony(context)
-            }
-
-            return sColony!!
-        }
-    }*/
 
     private var mCells =  Array(20) { Array(20) { Cell() }}
 
@@ -25,10 +14,6 @@ class Colony {
 
     fun updateCell(x: Int, y: Int) {
         this.mCells[x][y].swapState()
-    }
-
-    fun ColorOfCell(x: Int, y: Int): Int {
-        return this.mCells[x][y].getColor()
     }
 
     fun getLivingNeighbors(): Array<Array<Int>> {
@@ -48,7 +33,7 @@ class Colony {
 
                 // Checks to see if the cells are alive or dead. If they are alive
                 // it increments the count for living neighbors.
-                if (this.mCells[i][j].getState()) {
+                if (this.mCells[i][j].mAlive) {
                     livingNeighborsCount[leftOfRow % rows][leftOfColumn % columns]++
                     livingNeighborsCount[leftOfRow % rows][j % columns]++
                     livingNeighborsCount[(i + rows - 1) % rows][rightOfColumn % columns]++
@@ -75,7 +60,9 @@ class Colony {
                     count == 3 -> this.mCells[i][j].setAlive()
                 }
 
-                this.mCells[i][j].age()
+                // TODO: Turn this on after testing
+                // lifespan code works, but doesn't help to test
+                //this.mCells[i][j].age()
             }
         }
     }
