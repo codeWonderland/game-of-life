@@ -112,6 +112,7 @@ class ColonyRecyclerFragment : Fragment() {
             mAdapter = ColonyAdapter(cells)
             mColonyRecyclerView!!.adapter = mAdapter
         } else {
+            mAdapter!!.swapCells(cells)
             mAdapter!!.notifyDataSetChanged()
         }
     }
@@ -150,7 +151,7 @@ class ColonyRecyclerFragment : Fragment() {
         }
     }
 
-    private inner class ColonyAdapter(private val mCells: Array<Array<Cell>>) :
+    private inner class ColonyAdapter(private var mCells: Array<Array<Cell>>) :
         RecyclerView.Adapter<CellView>() {
 
         override fun getItemCount(): Int {
@@ -165,6 +166,10 @@ class ColonyRecyclerFragment : Fragment() {
         override fun onBindViewHolder(holder: CellView, position: Int) {
             val cell = mCells[position / mRowCount][position % mColCount]
             holder.bind(cell)
+        }
+
+        fun swapCells(cells: Array<Array<Cell>>) {
+            this.mCells = cells
         }
     }
 }
