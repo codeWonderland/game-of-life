@@ -136,7 +136,12 @@ class ColonyRecyclerFragment : Fragment() {
 
         fun bind(cell: Cell) {
             mCell = cell
-            // TODO: determine color stuffs
+
+            if (this.mCell!!.getState()) {
+                itemView.setBackgroundColor(ColonyRecyclerFragment.ALIVE)
+            } else {
+                itemView.setBackgroundColor(ColonyRecyclerFragment.DEAD)
+            }
         }
 
         override fun onClick(view: View) {
