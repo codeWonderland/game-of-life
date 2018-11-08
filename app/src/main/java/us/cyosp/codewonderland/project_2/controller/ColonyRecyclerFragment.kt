@@ -12,10 +12,6 @@ import android.widget.Button
 import us.cyosp.codewonderland.project_2.model.*
 import java.util.*
 
-
-
-
-
 class ColonyRecyclerFragment : Fragment() {
 
     companion object {
@@ -32,11 +28,11 @@ class ColonyRecyclerFragment : Fragment() {
     private var mRunButton: Button? = null
     private var mResetButton: Button? = null
 
-    private var mColony = Colony()
+    //private var mColony = Colony()
 
     private var mRunning: Boolean = false
 
-    var timer = Timer()
+    private var timer = Timer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,40 +55,25 @@ class ColonyRecyclerFragment : Fragment() {
         mColonyRecyclerView!!.addItemDecoration(DividerItemDecoration(activity,
             DividerItemDecoration.VERTICAL))
 
-        val thread = object : Thread() {
-
-            override fun run() {
-                try {
-                    while (!this.isInterrupted) {
-                        Thread.sleep(1000)
-                        activity!!.runOnUiThread {
-                            updateColony()
-                            updateUI()
-                        }
-                    }
-                } catch (e: InterruptedException) {
-                }
-
-            }
-        }
-
         mRunButton = view.findViewById(R.id.run_sim_button) as Button
         mRunButton!!.setOnClickListener {
             this.mRunning = this.mRunning.not()
 
-<<<<<<< HEAD
             if (this.mRunning) {
+                mRunButton!!.text = activity!!.getText(R.string.stop_sim)
                 runCalculations()
             } else {
+                mRunButton!!.text = activity!!.getText(R.string.run_sim)
                 timer.cancel()
             }
-=======
-            thread.start()
->>>>>>> 3c769f656a882a65aaa177efdf41d1d063419792
         }
 
         mResetButton = view.findViewById(R.id.reset_sim) as Button
         mResetButton!!.setOnClickListener {
+            timer.cancel()
+            if (mRunButton!!.text == activity!!.getText(R.string.stop_sim)) {
+                mRunButton!!.text = activity!!.getText(R.string.run_sim)
+            }
             fragmentManager!!.beginTransaction().replace(R.id.fragment_container, ColonyRecyclerFragment()).commit()
         }
 
@@ -129,22 +110,17 @@ class ColonyRecyclerFragment : Fragment() {
     }
 
     private fun updateColony() {
-        this.mColony.nextGeneration(this.mColony.getLivingNeighbors())
+        var colony = Colony(activity!!)
+        colony.nextGeneration(colony.getLivingNeighbors())
     }
 
     private fun updateUI() {
-        val cells = this.mColony.extract()
-
         if (mAdapter == null) {
+            val cells = Colony(activity!!).extract()
             this.mAdapter = ColonyAdapter(cells)
             mColonyRecyclerView!!.adapter = mAdapter
         } else {
-<<<<<<< HEAD
-            this.mAdapter!!.notifyDataSetChanged()
-=======
-            mAdapter!!.mCells = cells
-            mAdapter!!.notifyDataSetChanged()
->>>>>>> 3c769f656a882a65aaa177efdf41d1d063419792
+            activity!!.runOnUiThread { mAdapter!!.notifyDataSetChanged() }
         }
     }
 
@@ -213,8 +189,7 @@ class ColonyRecyclerFragment : Fragment() {
         timer.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 updateColony()
-                activity!!.runOnUiThread { mAdapter!!.notifyDataSetChanged() }
-
+                updateUI()
             }
         }, 250, 250)
     }
