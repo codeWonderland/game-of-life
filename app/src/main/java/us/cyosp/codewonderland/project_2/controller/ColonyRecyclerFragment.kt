@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.Button
 import us.cyosp.codewonderland.project_2.model.*
+import java.util.*
 
 class ColonyRecyclerFragment : Fragment() {
 
@@ -27,7 +28,11 @@ class ColonyRecyclerFragment : Fragment() {
     private var mRunButton: Button? = null
     private var mResetButton: Button? = null
 
+    private var mColony = Colony()
+
     private var mRunning: Boolean = false
+
+    var timer = Timer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,11 +59,10 @@ class ColonyRecyclerFragment : Fragment() {
         mRunButton!!.setOnClickListener {
             this.mRunning = this.mRunning.not()
 
-            // TODO: Fix running. Currently just freezes
-            while(mRunning) {
-                updateColony()
-                updateUI()
-                Thread.sleep(1000)
+            if (this.mRunning) {
+                runCalculations()
+            } else {
+                timer.cancel()
             }
         }
 
@@ -100,19 +104,17 @@ class ColonyRecyclerFragment : Fragment() {
     }
 
     private fun updateColony() {
-        val colony = Colony[activity!!]
-        colony.nextGeneration(colony.getLivingNeighbors())
+        this.mColony.nextGeneration(this.mColony.getLivingNeighbors())
     }
 
     private fun updateUI() {
-        val colony = Colony[activity!!]
-        val cells = colony.extract()
+        val cells = this.mColony.extract()
 
         if (mAdapter == null) {
-            mAdapter = ColonyAdapter(cells)
+            this.mAdapter = ColonyAdapter(cells)
             mColonyRecyclerView!!.adapter = mAdapter
         } else {
-            mAdapter!!.notifyDataSetChanged()
+            this.mAdapter!!.notifyDataSetChanged()
         }
     }
 
@@ -161,5 +163,15 @@ class ColonyRecyclerFragment : Fragment() {
             val cell = mCells[position / mRowCount][position % mColCount]
             holder.bind(cell)
         }
+    }
+
+    fun runCalculations() {
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                updateColony()
+                activity!!.runOnUiThread { mAdapter!!.notifyDataSetChanged() }
+
+            }
+        }, 250, 250)
     }
 }

@@ -3,8 +3,9 @@ package us.cyosp.codewonderland.project_2.model
 import android.content.Context
 import kotlin.collections.ArrayList
 
-class Colony(context: Context) {
-    companion object {
+class Colony {
+
+    /*companion object {
         var sColony: Colony? = null
 
 
@@ -16,7 +17,7 @@ class Colony(context: Context) {
 
             return sColony!!
         }
-    }
+    }*/
 
     private var mCells =  Array(20) { Array(20) { Cell() }}
 
@@ -24,6 +25,14 @@ class Colony(context: Context) {
 
     fun extract(): Array<Array<Cell>> {
         return this.mCells
+    }
+
+    fun updateCell(x: Int, y: Int) {
+        this.mCells[x][y].swapState()
+    }
+
+    fun ColorOfCell(x: Int, y: Int): Int {
+        return this.mCells[x][y].getColor()
     }
 
     fun getLivingNeighbors(): Array<Array<Int>> {
