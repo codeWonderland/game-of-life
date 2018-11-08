@@ -3,9 +3,9 @@ package us.cyosp.codewonderland.project_2.model
 import android.content.Context
 import kotlin.collections.ArrayList
 
-class Colony(context: Context) {
+class Colony {
 
-    companion object {
+   /* companion object {
         var sColony: Colony? = null
 
         operator fun get(context: Context): Colony {
@@ -15,7 +15,7 @@ class Colony(context: Context) {
 
             return sColony!!
         }
-    }
+    }*/
 
     private var mCells =  Array(20) { Array(20) { Cell() }}
 
