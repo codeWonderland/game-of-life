@@ -57,11 +57,14 @@ class ColonyRecyclerFragment : Fragment() {
             DividerItemDecoration.VERTICAL))
 
         fun run() {
-            Thread.sleep(1000)
-            activity!!.runOnUiThread {
-                updateColony()
-                updateUI(activity!!)
-            }
+            timer.scheduleAtFixedRate(object : TimerTask() {
+                override fun run() {
+                    updateColony()
+                    activity!!.runOnUiThread { updateUI(activity!!) }
+                }
+            }, 250, 250)
+
+
         }
 
 
@@ -70,6 +73,7 @@ class ColonyRecyclerFragment : Fragment() {
             this.mRunning = this.mRunning.not()
 
             if (this.mRunning) {
+                timer = Timer()
                 mRunButton!!.text = activity!!.getText(R.string.stop_sim)
                 run()
             } else {
@@ -206,5 +210,14 @@ class ColonyRecyclerFragment : Fragment() {
                 mHolders[y][x]?.bind(mCells[y][x])
             }
         }
+    }
+
+    fun runCalculations() {
+        timer = Timer()
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+
+            }
+        }, 250, 250)
     }
 }
