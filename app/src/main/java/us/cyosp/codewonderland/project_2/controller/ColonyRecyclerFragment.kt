@@ -56,33 +56,22 @@ class ColonyRecyclerFragment : Fragment() {
         mColonyRecyclerView!!.addItemDecoration(DividerItemDecoration(activity,
             DividerItemDecoration.VERTICAL))
 
-<<<<<<< HEAD
-=======
-        val thread = object : Thread() {
-
-            override fun run() {
-                try {
-                    while (!this.isInterrupted) {
-                        Thread.sleep(1000)
-                        activity!!.runOnUiThread {
-                            updateColony()
-                            updateUI(activity!!)
-                        }
-                    }
-                } catch (e: InterruptedException) {
-                }
-
+        fun run() {
+            Thread.sleep(1000)
+            activity!!.runOnUiThread {
+                updateColony()
+                updateUI(activity!!)
             }
         }
 
->>>>>>> d6e5035317f2dc08ec494c299b627a22b0ca34be
+
         mRunButton = view.findViewById(R.id.run_sim_button) as Button
         mRunButton!!.setOnClickListener {
             this.mRunning = this.mRunning.not()
 
             if (this.mRunning) {
                 mRunButton!!.text = activity!!.getText(R.string.stop_sim)
-                runCalculations()
+                run()
             } else {
                 mRunButton!!.text = activity!!.getText(R.string.run_sim)
                 timer.cancel()
@@ -135,25 +124,17 @@ class ColonyRecyclerFragment : Fragment() {
         colony.nextGeneration(colony.getLivingNeighbors())
     }
 
-<<<<<<< HEAD
-    private fun updateUI() {
-=======
     private fun updateUI(context: Context) {
         val colony = Colony[context]
         val cells = colony.extract()
 
->>>>>>> d6e5035317f2dc08ec494c299b627a22b0ca34be
         if (mAdapter == null) {
             val cells = Colony(activity!!).extract()
             this.mAdapter = ColonyAdapter(cells)
             mColonyRecyclerView!!.adapter = mAdapter
         } else {
-<<<<<<< HEAD
-            activity!!.runOnUiThread { mAdapter!!.notifyDataSetChanged() }
-=======
             mAdapter!!.updateCells(cells)
-            mAdapter!!.notifyDataSetChanged()
->>>>>>> d6e5035317f2dc08ec494c299b627a22b0ca34be
+            activity!!.runOnUiThread { mAdapter!!.notifyDataSetChanged() }
         }
     }
 
@@ -225,14 +206,5 @@ class ColonyRecyclerFragment : Fragment() {
                 mHolders[y][x]?.bind(mCells[y][x])
             }
         }
-    }
-
-    fun runCalculations() {
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                updateColony()
-                updateUI()
-            }
-        }, 250, 250)
     }
 }
