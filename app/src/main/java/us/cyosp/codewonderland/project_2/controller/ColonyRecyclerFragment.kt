@@ -146,22 +146,23 @@ class ColonyRecyclerFragment : Fragment() {
         ),
         View.OnClickListener {
 
-        private var mCell: Cell? = null
+        private var mCell: Cell
 
         init {
+            mCell = Cell()
             itemView.setOnClickListener(this)
-            itemView.setBackgroundColor(ColonyRecyclerFragment.DEAD)
+            itemView.setBackgroundColor(mCell.getColor())
             // TODO: determine fields
         }
 
         fun bind(cell: Cell) {
             mCell = cell
-            itemView.setBackgroundColor(mCell!!.getColor())
+            itemView.setBackgroundColor(mCell.getColor())
         }
 
         override fun onClick(view: View) {
-            mCell!!.swapState()
-            itemView.setBackgroundColor(mCell!!.getColor())
+            mCell.swapState()
+            itemView.setBackgroundColor(mCell.getColor())
         }
     }
 
@@ -180,9 +181,7 @@ class ColonyRecyclerFragment : Fragment() {
         override fun onBindViewHolder(holder: CellView, position: Int) {
             val y = position / mRowCount
             val x = position % mColCount
-
-            val cell = mColony.extract()[x][y]
-            holder.bind(cell)
+            holder.bind(mColony.extract()[x][y])
         }
     }
 }
