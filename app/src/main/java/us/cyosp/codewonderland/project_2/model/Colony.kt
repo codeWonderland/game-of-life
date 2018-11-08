@@ -7,8 +7,6 @@ class Colony(context: Context) {
     companion object {
         var sColony: Colony? = null
 
-
-
         operator fun get(context: Context): Colony {
             if (sColony == null) {
                 sColony = Colony(context)
@@ -19,8 +17,6 @@ class Colony(context: Context) {
     }
 
     private var mCells =  Array(20) { Array(20) { Cell() }}
-
-    var mRunning = false
 
     fun extract(): Array<Array<Cell>> {
         return this.mCells
