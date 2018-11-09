@@ -4,16 +4,12 @@ import android.content.Context
 import us.cyosp.codewonderland.project_2.R
 import kotlin.collections.ArrayList
 
-class Colony {
+class Colony(width: Int, height: Int, lifeSpan: Int) {
 
-    private var mCells =  Array(20) { Array(20) { Cell() }}
+    private var mCells =  Array(width) { Array(height) { Cell(lifeSpan) }}
 
     fun extract(): Array<Array<Cell>> {
         return this.mCells
-    }
-
-    fun updateCell(x: Int, y: Int) {
-        this.mCells[x][y].swapState()
     }
 
     fun getLivingNeighbors(): Array<Array<Int>> {
@@ -33,7 +29,7 @@ class Colony {
 
                 // Checks to see if the cells are alive or dead. If they are alive
                 // it increments the count for living neighbors.
-                if (this.mCells[i][j].mAlive) {
+                if (this.mCells[i][j].isAlive()) {
                     livingNeighborsCount[leftOfRow % rows][leftOfColumn % columns]++
                     livingNeighborsCount[leftOfRow % rows][j % columns]++
                     livingNeighborsCount[(i + rows - 1) % rows][rightOfColumn % columns]++

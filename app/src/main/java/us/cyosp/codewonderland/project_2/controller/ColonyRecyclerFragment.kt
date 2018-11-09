@@ -1,6 +1,5 @@
 package us.cyosp.codewonderland.project_2.controller
 
-import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -20,8 +19,9 @@ class ColonyRecyclerFragment : Fragment() {
         var DEAD: Int = Color.GRAY
     }
 
-    private val mRowCount = 20
-    private val mColCount = 20
+    private var mRowCount = 20
+    private var mColCount = 20
+    private var mLifeSpan = 20
 
     private var mColonyRecyclerView: RecyclerView? = null
     private var mAdapter: ColonyAdapter? = null
@@ -29,11 +29,14 @@ class ColonyRecyclerFragment : Fragment() {
     private var mRunButton: Button? = null
     private var mResetButton: Button? = null
 
-    private var mColony = Colony()
+    private var mColony = Colony(mRowCount, mColCount, mLifeSpan)
 
     private var mRunning: Boolean = false
 
-    private var timer: Timer? = null
+    private var mTimer: Timer? = null
+
+    private val mTimerDelay: Long = 200
+    private val mTimerPeriod: Long = 200
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,18 +64,18 @@ class ColonyRecyclerFragment : Fragment() {
             this.mRunning = this.mRunning.not()
 
             if (this.mRunning) {
-                timer = Timer()
+                mTimer = Timer()
                 mRunButton!!.text = activity!!.getText(R.string.stop_sim)
                 run()
             } else {
                 mRunButton!!.text = activity!!.getText(R.string.run_sim)
-                timer!!.cancel()
+                mTimer!!.cancel()
             }
         }
 
         mResetButton = view.findViewById(R.id.reset_sim) as Button
         mResetButton!!.setOnClickListener {
-            timer?.cancel()
+            mTimer?.cancel()
             if (mRunButton!!.text == activity!!.getText(R.string.stop_sim)) {
                 mRunButton!!.text = activity!!.getText(R.string.run_sim)
                 if (this.mRunning) {
@@ -130,12 +133,12 @@ class ColonyRecyclerFragment : Fragment() {
     }
 
     private fun run() {
-        timer!!.scheduleAtFixedRate(object : TimerTask() {
+        mTimer!!.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 updateColony()
                 activity!!.runOnUiThread { updateUI() }
             }
-        }, 250, 250)
+        }, mTimerDelay, mTimerPeriod)
 
 
     }
@@ -153,7 +156,7 @@ class ColonyRecyclerFragment : Fragment() {
         private var mCell: Cell
 
         init {
-            mCell = Cell()
+            mCell = Cell(mLifeSpan)
             itemView.setOnClickListener(this)
 
             updateColor()
@@ -172,7 +175,7 @@ class ColonyRecyclerFragment : Fragment() {
         }
 
         fun updateColor() {
-            val color = if (mCell.mAlive) {
+            val color = if (mCell.isAlive()) {
                 ALIVE
             } else {
                 DEAD

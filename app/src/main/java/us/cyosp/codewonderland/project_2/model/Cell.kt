@@ -3,15 +3,37 @@ package us.cyosp.codewonderland.project_2.model
 import android.graphics.Color
 import us.cyosp.codewonderland.project_2.R
 
-class Cell {
+data class Cell(val lifeSpan: Int) {
+    private val mLIFESPAN = lifeSpan
 
-    private val mLIFESPAN = 10
+    private var mAge = 0
+    private var mAlive = false
 
-    private var mAge: Int
+    fun age(): Int {
+        return this.mAge
+    }
 
-    var mAlive: Boolean
+    fun incAge() {
+        this.mAge++
+    }
 
-    init {
+    fun state(): Boolean {
+        return this.mAlive
+    }
+
+    fun alive() {
+        this.mAlive = true
+    }
+
+    fun dead() {
+        this.mAlive = false
+    }
+
+    fun swap() {
+        this.mAlive = this.mAlive.not()
+    }
+
+  /*  init {
         this.mAge = 0
         this.mAlive = false
     }
@@ -43,6 +65,30 @@ class Cell {
 
     private fun checkAge() = this.mAge >= mLIFESPAN
 
-    private fun incAge() = this.mAge++
+    private fun incAge() = this.mAge++*/
 
+}
+
+fun Cell.getAge(): Int {
+    return this.age()
+}
+
+fun Cell.isAlive(): Boolean {
+    return this.state()
+}
+
+fun Cell.age() {
+    this.incAge()
+}
+
+fun Cell.swapState() {
+    this.swap()
+}
+
+fun Cell.setAlive() {
+    this.alive()
+}
+
+fun Cell.setDead() {
+    this.dead()
 }
