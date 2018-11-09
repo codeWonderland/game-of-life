@@ -20,6 +20,10 @@ class ColonyRecyclerFragment : Fragment() {
     companion object {
         var ALIVE: Int = Color.GREEN
         var DEAD: Int = Color.GRAY
+        // Time delay before init //
+        var sTimerDelay: Long = 200
+        // Time in between each iteration //
+        var sTimerPeriod: Long = 200
     }
 
     // Running flag for button toggle //
@@ -27,10 +31,7 @@ class ColonyRecyclerFragment : Fragment() {
 
     // Timer for game loop //
     private var mTimer: Timer? = null
-    // Time delay before init //
-    private val mTimerDelay: Long = 200
-    // Time in between each iteration //
-    private val mTimerPeriod: Long = 200
+
 
     // Width and Height of grid //
     private var mRowCount = 20
@@ -42,7 +43,7 @@ class ColonyRecyclerFragment : Fragment() {
     // Colony of cells //
     // -Grid with given width and height
     // -Given life span for each cell
-    private var mColony = Colony(mRowCount, mColCount, mLifeSpan)
+    private var mColony = Colony(mRowCount, mColCount)
 
     // Colony grid recycler view //
     private var mColonyRecyclerView: RecyclerView? = null
@@ -157,70 +158,26 @@ class ColonyRecyclerFragment : Fragment() {
         when (item!!.itemId) {
 
             // Color Picker Alive option selected //
-            R.id.color_picker_alive -> {
-                ColorPickerPopup.Builder(activity)
-                    .initialColor(ALIVE) // Set initial color
-                    .enableBrightness(true) // Enable brightness slider or not
-                    .enableAlpha(true) // Enable alpha slider or not
-                    .okTitle("Choose")
-                    .cancelTitle("Cancel")
-                    .showIndicator(true)
-                    .showValue(true)
-                    .build()
-                    .show(object : ColorPickerPopup.ColorPickerObserver {
-                        override fun onColorPicked(color: Int) {
-                            ALIVE = color
-                        }
-
-                        override fun onColor(color: Int, fromUser: Boolean) {
-                            // TODO: Determine necessity
-                        }
-                    })
-
-                mColony.breakCache()
-                updateUI()
-                return true
-            }
+            R.id.color_picker_alive -> ALIVE = pickColor(ALIVE)
 
             // Color Picker Dead option selected //
-            R.id.color_picker_dead -> {
-                ColorPickerPopup.Builder(activity)
-                    .initialColor(DEAD) // Set initial color
-                    .enableBrightness(true) // Enable brightness slider or not
-                    .enableAlpha(true) // Enable alpha slider or not
-                    .okTitle("Choose")
-                    .cancelTitle("Cancel")
-                    .showIndicator(true)
-                    .showValue(true)
-                    .build()
-                    .show(object : ColorPickerPopup.ColorPickerObserver {
-                        override fun onColorPicked(color: Int) {
-                            DEAD = color
-                        }
-
-                        override fun onColor(color: Int, fromUser: Boolean) {
-                            // TODO: Determine necessity
-                        }
-                    })
-
-                mColony.breakCache()
-                updateUI()
-                return true
-            }
+            R.id.color_picker_dead ->  DEAD = pickColor(DEAD)
 
             // Save option selected //
             R.id.save -> {
                 // TODO: Add save pattern code here
-                return true
             }
 
             // Load optoin selected //
             R.id.load -> {
                 // TODO: Add load pattern code here
-                return true
             }
             else -> return super.onOptionsItemSelected(item)
         }
+
+        mColony.updateColors()
+        updateUI()
+        return true
     }
 
     // Action on Resume of app //
@@ -248,7 +205,7 @@ class ColonyRecyclerFragment : Fragment() {
         // Constructor //
         init {
             // Create a new default Cell
-            mCell = Cell(mLifeSpan)
+            mCell = Cell(DEAD)
 
             // Set Recycler cell to have onClick option //
             itemView.setOnClickListener(this)
@@ -270,7 +227,7 @@ class ColonyRecyclerFragment : Fragment() {
         override fun onClick(view: View) {
             // Swap state of cell //
             // -Alive if dead, Dead if Alive
-            mCell.swapState()
+            mCell.swap()
 
             // Update cell color //
             updateColor()
@@ -278,17 +235,8 @@ class ColonyRecyclerFragment : Fragment() {
 
         // Update cell color for this cell //
         fun updateColor() {
-            //  Get color of cell for state of Cell //
-            // -Alive: Alive color
-            // -Dead: Dead color
-            val color = if (mCell.isAlive()) {
-                ALIVE
-            } else {
-                DEAD
-            }
-
             // Set cell color //
-            itemView.setBackgroundColor(color)
+            itemView.setBackgroundColor(mCell.mColor)
         }
     }
 
@@ -354,6 +302,31 @@ class ColonyRecyclerFragment : Fragment() {
                 // Update UI //
                 updateUI()
             }
-        }, mTimerDelay, mTimerPeriod)
+        }, sTimerDelay, sTimerPeriod)
+    }
+
+    private fun pickColor(preColor: Int): Int {
+        var newColor = preColor
+
+        ColorPickerPopup.Builder(activity)
+            .initialColor(newColor) // Set initial color
+            .enableBrightness(true) // Enable brightness slider or not
+            .enableAlpha(true) // Enable alpha slider or not
+            .okTitle("Choose")
+            .cancelTitle("Cancel")
+            .showIndicator(true)
+            .showValue(true)
+            .build()
+            .show(object : ColorPickerPopup.ColorPickerObserver {
+                override fun onColorPicked(color: Int) {
+                    newColor = color
+                }
+
+                override fun onColor(color: Int, fromUser: Boolean) {
+                    // TODO: Determine necessity
+                }
+            })
+
+        return newColor
     }
 }
