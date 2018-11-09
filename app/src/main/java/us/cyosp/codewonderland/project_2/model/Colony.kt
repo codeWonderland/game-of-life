@@ -1,20 +1,24 @@
 package us.cyosp.codewonderland.project_2.model
 
-class Colony(private val mRows: Int, private val mColumns: Int, private val mLifeSpan: Int) {
+import us.cyosp.codewonderland.project_2.controller.ColonyRecyclerFragment
+
+class Colony(private val mRows: Int, private val mColumns: Int) {
 
     // Grid of cells //
     // -Initialized with given data //
-    private var mCells =  Array(mRows) { Array(mColumns) { Cell(mLifeSpan) }}
+    private var mCells =  Array(mRows) { Array(mColumns) { Cell(ColonyRecyclerFragment.DEAD) }}
 
     // Get grid of cells //
     fun extract(): Array<Array<Cell>> {
         return this.mCells
     }
 
-    fun breakCache() {
+    fun updateColors() {
         for (i in 0 until mRows) {
             for (j in 0 until mColumns) {
-                mCells[i][j].breakCache()
+                mCells[i][j].mColor =
+                        if (mCells[i][j].mAlive) ColonyRecyclerFragment.ALIVE
+                        else ColonyRecyclerFragment.DEAD
             }
         }
     }
@@ -39,7 +43,7 @@ class Colony(private val mRows: Int, private val mColumns: Int, private val mLif
 
                 // Checks to see if the cells are alive or dead. If they are alive
                 // it increments the count for living neighbors.
-                if (this.mCells[i][j].isAlive()) {
+                if (this.mCells[i][j].mAlive) {
                     livingNeighborsCount[leftOfRow % mRows][leftOfColumn % mColumns]++
                     livingNeighborsCount[leftOfRow % mRows][j % mColumns]++
                     livingNeighborsCount[(i + mRows - 1) % mRows][rightOfColumn % mColumns]++
@@ -65,15 +69,15 @@ class Colony(private val mRows: Int, private val mColumns: Int, private val mLif
                 when {
                     // Neighbors over 3 //
                     // -Cell dies
-                    count > 3 -> this.mCells[i][j].setDead()
+                    count > 3 -> this.mCells[i][j].mAlive = false
 
                     // Neighbors under 2 //
                     // -Cell dies
-                    count < 2 -> this.mCells[i][j].setDead()
+                    count < 2 -> this.mCells[i][j].mAlive = false
 
                     // Neighbors is 3 //
                     // -Cell created
-                    count == 3 -> this.mCells[i][j].setAlive()
+                    count == 3 -> this.mCells[i][j].mAlive = true
 
                     // Neighbors is 2 //
                     // -Ignored
