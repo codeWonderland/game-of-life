@@ -78,7 +78,7 @@ class ColonyRecyclerFragment : Fragment() {
         // Initialize RecyclerView //
         mColonyRecyclerView = view
             .findViewById(R.id.colony_recycler_view) as RecyclerView
-        mColonyRecyclerView!!.layoutManager = GridLayoutManager(activity, mColCount)
+        mColonyRecyclerView!!.layoutManager = GridLayoutManager(activity!!, mColCount)
 
         // Set cell divider horizontally //
         mColonyRecyclerView!!.addItemDecoration(DividerItemDecoration(activity,
@@ -177,6 +177,7 @@ class ColonyRecyclerFragment : Fragment() {
                         }
                     })
 
+                mColony.breakCache()
                 updateUI()
                 return true
             }
@@ -202,6 +203,7 @@ class ColonyRecyclerFragment : Fragment() {
                         }
                     })
 
+                mColony.breakCache()
                 updateUI()
                 return true
             }

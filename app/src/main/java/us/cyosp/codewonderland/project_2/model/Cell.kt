@@ -1,19 +1,18 @@
 package us.cyosp.codewonderland.project_2.model
 
-import android.graphics.Color
-import us.cyosp.codewonderland.project_2.R
-
-data class Cell(val lifeSpan: Int) {
-    // Life span for cell //
-    private val mLIFESPAN = lifeSpan
+class Cell(private val mLifeSpan: Int) {
 
     // Age of cell //
     private var mAge = 0
+
+    private var mCacheBreaker = 0
 
     // Cell state //
     // -Alive: true
     // -Dead: false
     private var mAlive = false
+
+    fun breakCache() = mCacheBreaker++
 
     // Get age of cell //
     fun age(): Int {
