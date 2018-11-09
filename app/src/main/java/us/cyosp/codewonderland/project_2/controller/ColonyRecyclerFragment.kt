@@ -7,6 +7,7 @@ import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.GridLayoutManager
 import us.cyosp.codewonderland.project_2.R
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.*
 import android.widget.Button
 import us.cyosp.codewonderland.project_2.model.*
@@ -158,25 +159,27 @@ class ColonyRecyclerFragment : Fragment() {
         when (item!!.itemId) {
 
             // Color Picker Alive option selected //
-            R.id.color_picker_alive -> ALIVE = pickColor(ALIVE)
+            R.id.color_picker_alive -> {
+                pickColor(ALIVE.toString(), ALIVE)
+            }
 
             // Color Picker Dead option selected //
-            R.id.color_picker_dead ->  DEAD = pickColor(DEAD)
+            R.id.color_picker_dead -> {
+                pickColor(DEAD.toString(), DEAD)
+            }
 
             // Save option selected //
             R.id.save -> {
                 // TODO: Add save pattern code here
             }
 
-            // Load optoin selected //
+                // Load optoin selected //
             R.id.load -> {
                 // TODO: Add load pattern code here
             }
+
             else -> return super.onOptionsItemSelected(item)
         }
-
-        mColony.updateColors()
-        updateUI()
         return true
     }
 
@@ -235,6 +238,8 @@ class ColonyRecyclerFragment : Fragment() {
 
         // Update cell color for this cell //
         fun updateColor() {
+            mCell.mColor = if(mCell.mAlive) ColonyRecyclerFragment.ALIVE
+                            else ColonyRecyclerFragment.DEAD
             // Set cell color //
             itemView.setBackgroundColor(mCell.mColor)
         }
@@ -305,11 +310,9 @@ class ColonyRecyclerFragment : Fragment() {
         }, sTimerDelay, sTimerPeriod)
     }
 
-    private fun pickColor(preColor: Int): Int {
-        var newColor = preColor
-
+    private fun pickColor(name: String, preColor: Int) {
         ColorPickerPopup.Builder(activity)
-            .initialColor(newColor) // Set initial color
+            .initialColor(preColor) // Set initial color
             .enableBrightness(true) // Enable brightness slider or not
             .enableAlpha(true) // Enable alpha slider or not
             .okTitle("Choose")
@@ -319,14 +322,21 @@ class ColonyRecyclerFragment : Fragment() {
             .build()
             .show(object : ColorPickerPopup.ColorPickerObserver {
                 override fun onColorPicked(color: Int) {
-                    newColor = color
+                    changeColor(name, color)
                 }
 
                 override fun onColor(color: Int, fromUser: Boolean) {
                     // TODO: Determine necessity
                 }
             })
+    }
 
-        return newColor
+    private fun changeColor(name: String, color: Int) {
+        when(name) {
+            ALIVE.toString() -> ALIVE = color
+            DEAD.toString() -> DEAD = color
+        }
+        mColony.updateColors()
+        updateUI()
     }
 }

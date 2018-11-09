@@ -35,8 +35,5 @@ class Cell(var mColor: Int) {
     // -Alive if dead, Dead if Alive
     fun swap() {
         this.mAlive = this.mAlive.not()
-
-        this.mColor = if (mAlive) ColonyRecyclerFragment.ALIVE
-                else ColonyRecyclerFragment.DEAD
     }
 }
