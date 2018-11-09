@@ -66,6 +66,7 @@ class Colony(private val mRows: Int, private val mColumns: Int) {
             for (j in 0 until mColumns) {
                 // Get count of neighbors for cell //
                 val count = livingNeighbors[i][j]
+
                 when {
                     // Neighbors over 3 //
                     // -Cell dies
