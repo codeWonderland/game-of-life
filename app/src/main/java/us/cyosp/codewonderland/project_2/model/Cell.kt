@@ -4,91 +4,76 @@ import android.graphics.Color
 import us.cyosp.codewonderland.project_2.R
 
 data class Cell(val lifeSpan: Int) {
+    // Life span for cell //
     private val mLIFESPAN = lifeSpan
 
+    // Age of cell //
     private var mAge = 0
+
+    // Cell state //
+    // -Alive: true
+    // -Dead: false
     private var mAlive = false
 
+    // Get age of cell //
     fun age(): Int {
         return this.mAge
     }
 
+    // Increment age of cell //
     fun incAge() {
         this.mAge++
     }
 
+    // Get cell state //
     fun state(): Boolean {
         return this.mAlive
     }
 
+    // Set cell to alive //
     fun alive() {
         this.mAlive = true
     }
 
+    // Set cell to dead //
     fun dead() {
         this.mAlive = false
     }
 
+    // Swap current state //
+    // -Alive if dead, Dead if Alive
     fun swap() {
         this.mAlive = this.mAlive.not()
     }
-
-  /*  init {
-        this.mAge = 0
-        this.mAlive = false
-    }
-
-    fun swapState() {
-        this.mAlive = this.mAlive.not()
-    }
-
-    fun setAlive() {
-        this.mAlive = true
-    }
-
-    fun setDead() {
-        this.mAlive = false
-    }
-
-    fun age() {
-        if (!checkAge()) {
-            incAge()
-        } else {
-            resetCell()
-        }
-    }
-
-    private fun resetCell() {
-        this.mAge = 0
-        this.setDead()
-    }
-
-    private fun checkAge() = this.mAge >= mLIFESPAN
-
-    private fun incAge() = this.mAge++*/
-
 }
 
+// Get cell age //
 fun Cell.getAge(): Int {
     return this.age()
 }
 
+// Check cell state //
 fun Cell.isAlive(): Boolean {
     return this.state()
 }
 
+// Increment cell age //
+// TODO: Should probably rename this...
 fun Cell.age() {
     this.incAge()
 }
 
+// Swap cell state //
 fun Cell.swapState() {
     this.swap()
 }
 
+// Set cell to alive //
 fun Cell.setAlive() {
     this.alive()
 }
 
+// Set cell to dead //
 fun Cell.setDead() {
     this.dead()
 }
