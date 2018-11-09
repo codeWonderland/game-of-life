@@ -5,5 +5,6 @@
     <string name="reset">Reset</string>
     <string name="save">Save</string>
     <string name="load">Load</string>
-    <string name="color_picker">Change Color</string>
+    <string name="color_picker_alive">Change Alive Color</string>
+    <string name="color_picker_dead">Change Dead Color</string>
 </resources>

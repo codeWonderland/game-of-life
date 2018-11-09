@@ -11,6 +11,9 @@ import android.view.*
 import android.widget.Button
 import us.cyosp.codewonderland.project_2.model.*
 import java.util.*
+import top.defaults.colorpicker.ColorPickerPopup
+
+
 
 class ColonyRecyclerFragment : Fragment() {
 
@@ -153,9 +156,51 @@ class ColonyRecyclerFragment : Fragment() {
         // Check which item is selected //
         when (item!!.itemId) {
 
-            // Color Picker option selected //
-            R.id.color_picker -> {
-                // TODO: Add color picker code here
+            // Color Picker Alive option selected //
+            R.id.color_picker_alive -> {
+                ColorPickerPopup.Builder(activity)
+                    .initialColor(ALIVE) // Set initial color
+                    .enableBrightness(true) // Enable brightness slider or not
+                    .enableAlpha(true) // Enable alpha slider or not
+                    .okTitle("Choose")
+                    .cancelTitle("Cancel")
+                    .showIndicator(true)
+                    .showValue(true)
+                    .build()
+                    .show(object : ColorPickerPopup.ColorPickerObserver {
+                        override fun onColorPicked(color: Int) {
+                            ALIVE = color
+                        }
+
+                        override fun onColor(color: Int, fromUser: Boolean) {
+                            // TODO: Determine necessity
+                        }
+                    })
+
+                updateUI()
+                return true
+            }
+
+            // Color Picker Dead option selected //
+            R.id.color_picker_dead -> {
+                ColorPickerPopup.Builder(activity)
+                    .initialColor(DEAD) // Set initial color
+                    .enableBrightness(true) // Enable brightness slider or not
+                    .enableAlpha(true) // Enable alpha slider or not
+                    .okTitle("Choose")
+                    .cancelTitle("Cancel")
+                    .showIndicator(true)
+                    .showValue(true)
+                    .build()
+                    .show(object : ColorPickerPopup.ColorPickerObserver {
+                        override fun onColorPicked(color: Int) {
+                            DEAD = color
+                        }
+
+                        override fun onColor(color: Int, fromUser: Boolean) {
+                            // TODO: Determine necessity
+                        }
+                    })
 
                 updateUI()
                 return true
