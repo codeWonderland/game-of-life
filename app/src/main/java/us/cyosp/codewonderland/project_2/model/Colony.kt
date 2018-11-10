@@ -1,5 +1,10 @@
 package us.cyosp.codewonderland.project_2.model
 
+import com.beust.klaxon.JsonArray
+import com.beust.klaxon.Klaxon
+import com.beust.klaxon.KlaxonJson
+import com.google.gson.Gson
+import org.json.JSONStringer
 import us.cyosp.codewonderland.project_2.controller.ColonyRecyclerFragment
 
 class Colony(private val mRows: Int, private val mColumns: Int) {
@@ -94,5 +99,26 @@ class Colony(private val mRows: Int, private val mColumns: Int) {
         // TODO: Implement check for if cells are still alive
         // -This is to help make death due to age clearer
         return true
+    }
+
+    fun encode(): String {
+        var data = Array(mRows) { Array(mColumns) {false}}
+            for(i in 0 until mRows) {
+                for (j in 0 until mColumns) {
+                    data[i][j] = this.mCells[i][j].mAlive
+            }
+        }
+
+        return Gson().toJson(data)
+    }
+
+    fun decode(data: String) {
+        var dataMap = Gson().fromJson(data, Array<Array<Boolean>>::class.java)
+
+        for (i in 0 until mRows) {
+            for (j in 0 until mColumns) {
+                this.mCells[i][j].mAlive = dataMap[i][j]
+            }
+        }
     }
 }

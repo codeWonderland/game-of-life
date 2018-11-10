@@ -1,19 +1,30 @@
 package us.cyosp.codewonderland.project_2.controller
 
+import android.app.Activity
+import android.content.ContentResolver
+import android.content.Context
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.os.ParcelFileDescriptor
+import android.provider.DocumentsContract
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.GridLayoutManager
 import us.cyosp.codewonderland.project_2.R
 import android.support.v7.widget.RecyclerView
+import android.util.JsonWriter
 import android.util.Log
 import android.view.*
 import android.widget.Button
+import com.google.gson.Gson
+import org.json.JSONObject
 import us.cyosp.codewonderland.project_2.model.*
 import java.util.*
 import top.defaults.colorpicker.ColorPickerPopup
-
+import java.io.*
 
 
 class ColonyRecyclerFragment : Fragment() {
@@ -25,6 +36,10 @@ class ColonyRecyclerFragment : Fragment() {
         var sTimerDelay: Long = 200
         // Time in between each iteration //
         var sTimerPeriod: Long = 200
+
+        private const val READ_REQUEST_CODE: Int = 42
+        private const val WRITE_REQUEST_CODE: Int = 43
+        private const val DELETE_REQUEST_CODE: Int = 44
     }
 
     // Running flag for button toggle //
@@ -170,12 +185,17 @@ class ColonyRecyclerFragment : Fragment() {
 
             // Save option selected //
             R.id.save -> {
-                // TODO: Add save pattern code here
+                createFile("patter/file", "Untitled")
             }
 
-                // Load optoin selected //
+            // Load option selected //
             R.id.load -> {
-                // TODO: Add load pattern code here
+                pickFile()
+            }
+
+            // Delete option selected
+            R.id.delete -> {
+                deleteFile()
             }
 
             else -> return super.onOptionsItemSelected(item)
@@ -274,6 +294,29 @@ class ColonyRecyclerFragment : Fragment() {
         }
     }
 
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+        if (resultCode == Activity.RESULT_OK) {
+            when(requestCode) {
+                READ_REQUEST_CODE -> {
+                    resultData?.data?.also { uri ->
+                        loadDataFromFile(uri)
+                    }
+                }
+                WRITE_REQUEST_CODE -> {
+                    resultData?.data?.also {uri ->
+                        saveDataToFile(uri)
+                    }
+                }
+                DELETE_REQUEST_CODE -> {
+                    resultData?.data?.also { uri ->
+                        DocumentsContract.deleteDocument(activity!!.contentResolver, uri)
+                    }
+                }
+            }
+        }
+    }
+
     // Run colony life update //
     private fun updateColony(): Boolean {
         // Get all living neighbors and set next generation for given set //
@@ -331,12 +374,64 @@ class ColonyRecyclerFragment : Fragment() {
             })
     }
 
+    private fun pickFile() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+
+            type = "*/*"
+        }
+
+        startActivityForResult(intent, READ_REQUEST_CODE)
+    }
+
+    private fun createFile(mimeType: String, fileName: String) {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            // Filter to only show results that can be "opened", such as
+            // a file (as opposed to a list of contacts or timezones).
+            addCategory(Intent.CATEGORY_OPENABLE)
+
+            // Create a file with the requested MIME type.
+            type = mimeType
+            putExtra(Intent.EXTRA_TITLE, fileName)
+        }
+
+        startActivityForResult(intent, WRITE_REQUEST_CODE)
+    }
+
+    private fun deleteFile() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+
+            type = "*/*"
+        }
+
+        startActivityForResult(intent, DELETE_REQUEST_CODE)
+    }
+
     private fun changeColor(name: String, color: Int) {
         when(name) {
             ALIVE.toString() -> ALIVE = color
             DEAD.toString() -> DEAD = color
         }
         mColony.updateColors()
+        updateUI()
+    }
+
+    private fun saveDataToFile(uri: Uri?) {
+        activity!!.contentResolver.openOutputStream(uri!!).use { outputStream ->
+            BufferedWriter(OutputStreamWriter(outputStream)).use { writer ->
+                writer.write(mColony.encode())
+            }
+        }
+    }
+
+    private fun loadDataFromFile(uri: Uri?) {
+        activity!!.contentResolver.openInputStream(uri!!).use { inputStream ->
+            BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                mColony.decode(reader.readText())
+            }
+        }
+
         updateUI()
     }
 }
