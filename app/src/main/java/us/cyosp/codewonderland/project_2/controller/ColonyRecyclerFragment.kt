@@ -49,8 +49,6 @@ class ColonyRecyclerFragment : Fragment() {
         // Time in between each iteration //
         var sTimerPeriod: Long = 200
 
-        private const val COLONY_DATA_ID = "colony_data"
-
         private const val READ_REQUEST_CODE: Int = 42
         private const val WRITE_REQUEST_CODE: Int = 43
         private const val DELETE_REQUEST_CODE: Int = 44
@@ -88,21 +86,16 @@ class ColonyRecyclerFragment : Fragment() {
     // -Resets simulation
     private var mResetButton: Button? = null
 
-    fun newIntent(packageContext: Context, colony: Colony): Intent {
-        val intent = Intent(packageContext, ColonyRecyclerFragment::class.java)
-        intent.putExtra(COLONY_DATA_ID, colony.encode())
-        return intent
-    }
-
     // Called on creation //
     // -Sets view to have a menu
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
 
-        if (activity!!.intent.hasCategory(COLONY_DATA_ID)) {
-            val data = activity!!.intent.getSerializableExtra(COLONY_DATA_ID) as String
-            mColony.decode(data)
+        val colonyData: String? = arguments?.getString(MainActivity.COLONY_DATA_ID)
+
+        if (colonyData != null) {
+            mColony.decode(colonyData)
         }
     }
 
@@ -199,7 +192,7 @@ class ColonyRecyclerFragment : Fragment() {
         when (item!!.itemId) {
 
             R.id.clone_activity -> {
-                var intent = ColonyRecyclerFragment().newIntent(context!!, mColony)
+                val intent = MainActivity().newIntent(context!!, mColony)
                 activity!!.startActivity(intent)
             }
 
