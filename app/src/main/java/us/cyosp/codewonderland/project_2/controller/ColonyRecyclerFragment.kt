@@ -92,9 +92,12 @@ class ColonyRecyclerFragment : Fragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
 
+        // get available data from arguments
         val colonyData: String? = arguments?.getString(MainActivity.COLONY_DATA_ID)
 
+        // if we have colony data
         if (colonyData != null) {
+            // we decode that information
             mColony.decode(colonyData)
         }
     }

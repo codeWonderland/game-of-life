@@ -24,20 +24,29 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // check for colony data from intent
         val colonyData: String? = this.intent?.extras?.getString(COLONY_DATA_ID)
 
         val fm = supportFragmentManager
         var fragment: Fragment? = fm.findFragmentById(R.id.fragment_container)
 
         if (fragment == null) {
+
+            // if we have colony data, we pass it to the fragment
             if (colonyData != null) {
+                // create new Bundle
                 val bundle = Bundle()
+                // put the colony data into bundle
                 bundle.putString(COLONY_DATA_ID, colonyData)
 
+                // establish fragment
                 fragment = ColonyRecyclerFragment()
+                // pass bundle data to fragment as argument
                 fragment.arguments = bundle
 
             } else {
+                // if we don't have colony data
+                // we just create the empty fragment
                 fragment = ColonyRecyclerFragment()
             }
 
