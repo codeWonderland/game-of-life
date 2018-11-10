@@ -25,15 +25,33 @@ import us.cyosp.codewonderland.project_2.model.*
 import java.util.*
 import top.defaults.colorpicker.ColorPickerPopup
 import java.io.*
-
+import us.cyosp.codewonderland.project_2.util.ColorConverter
 
 class ColonyRecyclerFragment : Fragment() {
 
     companion object {
         var ALIVE: Int = Color.GREEN
         var DEAD: Int = Color.GRAY
+
+        // the lower the number, the faster the pulse
+        // make sure the number divides 100 evenly
+        private const val MAX_OPACITY = 5
+
+        // SHOULD ALWAYS STAY 0
+        private const val MIN_OPACITY = 0
+
+        // determines if we should be
+        // incrementing or decrementing
+        // the current opacity
+        private var sOpRising = false
+
+        // current opacity in percent
+        // divided by 10 for easy updates
+        var sOpactiy: Int = MAX_OPACITY
+
         // Time delay before init //
         var sTimerDelay: Long = 200
+
         // Time in between each iteration //
         var sTimerPeriod: Long = 200
 
@@ -95,7 +113,7 @@ class ColonyRecyclerFragment : Fragment() {
         // Initialize RecyclerView //
         mColonyRecyclerView = view
             .findViewById(R.id.colony_recycler_view) as RecyclerView
-        mColonyRecyclerView!!.layoutManager = GridLayoutManager(activity!!, mColCount)
+        mColonyRecyclerView!!.layoutManager = GridLayoutManager(activity, mColCount)
 
         // Set cell divider horizontally //
         mColonyRecyclerView!!.addItemDecoration(DividerItemDecoration(activity,
@@ -258,7 +276,13 @@ class ColonyRecyclerFragment : Fragment() {
 
         // Update cell color for this cell //
         fun updateColor() {
-            mCell.mColor = if(mCell.mAlive) ColonyRecyclerFragment.ALIVE
+            // Update opacity of living cells
+            val aliveColor = ColorConverter.convertIntoColor(
+                ColonyRecyclerFragment.ALIVE,
+                ColonyRecyclerFragment.sOpactiy * (100 / MAX_OPACITY)
+            )
+
+            mCell.mColor = if(mCell.mAlive) aliveColor
                             else ColonyRecyclerFragment.DEAD
             // Set cell color //
             itemView.setBackgroundColor(mCell.mColor)
@@ -319,6 +343,19 @@ class ColonyRecyclerFragment : Fragment() {
 
     // Run colony life update //
     private fun updateColony(): Boolean {
+        if (sOpactiy == MAX_OPACITY) {
+            sOpRising = false
+
+        } else if (sOpactiy == MIN_OPACITY) {
+            sOpRising = true
+        }
+        sOpactiy = if (sOpRising) {
+            ++sOpactiy
+
+        } else {
+            --sOpactiy
+        }
+
         // Get all living neighbors and set next generation for given set //
         return mColony.nextGeneration(mColony.getLivingNeighbors())
     }
@@ -413,6 +450,7 @@ class ColonyRecyclerFragment : Fragment() {
             ALIVE.toString() -> ALIVE = color
             DEAD.toString() -> DEAD = color
         }
+
         mColony.updateColors()
         updateUI()
     }
