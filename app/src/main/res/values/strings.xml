@@ -8,4 +8,5 @@
     <string name="delete">Delete</string>
     <string name="color_picker_alive">Change Alive Color</string>
     <string name="color_picker_dead">Change Dead Color</string>
+    <string name="clone_activity">Clone Game</string>
 </resources>

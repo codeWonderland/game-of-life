@@ -1,26 +1,20 @@
 package us.cyosp.codewonderland.project_2.controller
 
 import android.app.Activity
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.GridLayoutManager
 import us.cyosp.codewonderland.project_2.R
 import android.support.v7.widget.RecyclerView
-import android.util.JsonWriter
-import android.util.Log
 import android.view.*
 import android.widget.Button
-import com.google.gson.Gson
-import org.json.JSONObject
 import us.cyosp.codewonderland.project_2.model.*
 import java.util.*
 import top.defaults.colorpicker.ColorPickerPopup
@@ -54,6 +48,8 @@ class ColonyRecyclerFragment : Fragment() {
 
         // Time in between each iteration //
         var sTimerPeriod: Long = 200
+
+        private const val COLONY_DATA_ID = "colony_data"
 
         private const val READ_REQUEST_CODE: Int = 42
         private const val WRITE_REQUEST_CODE: Int = 43
@@ -92,11 +88,22 @@ class ColonyRecyclerFragment : Fragment() {
     // -Resets simulation
     private var mResetButton: Button? = null
 
+    fun newIntent(packageContext: Context, colony: Colony): Intent {
+        val intent = Intent(packageContext, ColonyRecyclerFragment::class.java)
+        intent.putExtra(COLONY_DATA_ID, colony.encode())
+        return intent
+    }
+
     // Called on creation //
     // -Sets view to have a menu
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        if (activity!!.intent.hasCategory(COLONY_DATA_ID)) {
+            val data = activity!!.intent.getSerializableExtra(COLONY_DATA_ID) as String
+            mColony.decode(data)
+        }
     }
 
     // Called on creation of RecyclerView //
@@ -190,6 +197,11 @@ class ColonyRecyclerFragment : Fragment() {
 
         // Check which item is selected //
         when (item!!.itemId) {
+
+            R.id.clone_activity -> {
+                var intent = ColonyRecyclerFragment().newIntent(context!!, mColony)
+                activity!!.startActivity(intent)
+            }
 
             // Color Picker Alive option selected //
             R.id.color_picker_alive -> {
