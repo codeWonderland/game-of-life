@@ -1,5 +1,7 @@
 package us.cyosp.codewonderland.project_2.model
 
+import android.graphics.Bitmap
+import android.media.ExifInterface
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.Klaxon
 import com.beust.klaxon.KlaxonJson
@@ -111,6 +113,35 @@ class Colony(private val mRows: Int, private val mColumns: Int) {
         }
 
         return Gson().toJson(data)
+    }
+
+    fun toBitmap(): Bitmap {
+        var image = Bitmap.createBitmap(mRows, mColumns, Bitmap.Config.ARGB_8888)
+
+        for (i in 0 until mRows) {
+            for (j in 0 until mColumns) {
+                image.setPixel(i, j, mCells[i][j].mColor)
+            }
+        }
+        return image
+    }
+
+    fun fromBitmap(image: Bitmap) {
+        for (i in 0 until mRows) {
+            for (j in 0 until mColumns) {
+                when(image.getPixel(i, j)){
+                    ColonyRecyclerFragment.ALIVE -> {
+                        this.mCells[i][j].mAlive = true
+                    }
+                    ColonyRecyclerFragment.DEAD -> {
+                        this.mCells[i][j].mAlive = false
+                    }
+                    else -> {
+                        this.mCells[i][j].mAlive = false
+                    }
+                }
+            }
+        }
     }
 
     fun decode(data: String) {

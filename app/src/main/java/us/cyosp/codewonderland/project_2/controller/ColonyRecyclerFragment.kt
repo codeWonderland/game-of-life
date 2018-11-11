@@ -1,18 +1,30 @@
 package us.cyosp.codewonderland.project_2.controller
 
 import android.app.Activity
-import android.content.Context
-import android.content.Intent
+import android.content.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.ImageDecoder
+import android.media.ExifInterface
+import android.media.Image
+import android.media.ImageReader
+import android.media.ImageWriter
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.os.storage.StorageManager
 import android.provider.DocumentsContract
+import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.support.v4.app.Fragment
+import android.support.v4.graphics.PathUtils
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.GridLayoutManager
 import us.cyosp.codewonderland.project_2.R
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.*
 import android.widget.Button
 import us.cyosp.codewonderland.project_2.model.*
@@ -20,10 +32,14 @@ import java.util.*
 import top.defaults.colorpicker.ColorPickerPopup
 import java.io.*
 import us.cyosp.codewonderland.project_2.util.ColorConverter
+import java.net.URI
+
 
 class ColonyRecyclerFragment : Fragment() {
 
     companion object {
+        var ALIVE_TAG = "alive_color"
+        var DEAD_TAG = "dead_color"
         var ALIVE: Int = Color.GREEN
         var DEAD: Int = Color.GRAY
 
@@ -211,7 +227,37 @@ class ColonyRecyclerFragment : Fragment() {
 
             // Save option selected //
             R.id.save -> {
-                createFile("patter/file", "Untitled")
+                createFile("image/jpeg", "Untitled")
+
+                /*        var result: String? = null;
+         if (uri.scheme == ("content")) {
+             var cursor = activity!!.contentResolver.query(uri, null, null, null, null)
+             try {
+               if (cursor != null && cursor.moveToFirst()) {
+                 result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+               }
+             } finally {
+               cursor?.close()
+             }
+           }
+           if (result == null) {
+             result = uri.path
+             var cut = result.lastIndexOf('/')
+             if (cut != -1) {
+               result = result.substring(cut + 1)
+             }
+           }
+
+         var path = "$pack${uri.path}"
+         Log.d("Save Data File", path)*/
+
+                /* val proj = arrayOf(Environment.DIRECTORY_PICTURES)
+                 val cursor = context!!.contentResolver.query(uri, proj, null, null, null)
+                 val column_index = cursor!!.getColumnIndexOrThrow(Environment.DIRECTORY_PICTURES)
+                 cursor.moveToFirst()
+                 ExifInterface(cursor.getString(column_index)).setAttribute(ALIVE_TAG, ALIVE.toString())
+                 ExifInterface(cursor.getString(column_index)).setAttribute(DEAD_TAG, DEAD.toString())
+                 cursor.close()*/
             }
 
             // Load option selected //
@@ -337,7 +383,8 @@ class ColonyRecyclerFragment : Fragment() {
                 }
                 WRITE_REQUEST_CODE -> {
                     resultData?.data?.also {uri ->
-                        saveDataToFile(uri)
+                        var dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                        saveDataToFile(dir.path, uri)
                     }
                 }
                 DELETE_REQUEST_CODE -> {
@@ -431,11 +478,8 @@ class ColonyRecyclerFragment : Fragment() {
 
     private fun createFile(mimeType: String, fileName: String) {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-            // Filter to only show results that can be "opened", such as
-            // a file (as opposed to a list of contacts or timezones).
             addCategory(Intent.CATEGORY_OPENABLE)
 
-            // Create a file with the requested MIME type.
             type = mimeType
             putExtra(Intent.EXTRA_TITLE, fileName)
         }
@@ -463,21 +507,30 @@ class ColonyRecyclerFragment : Fragment() {
         updateUI()
     }
 
-    private fun saveDataToFile(uri: Uri?) {
+    fun getPath(uri: Uri): String {
+        val projection = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = activity!!.contentResolver.query(uri, projection, null, null, null)
+        val column_index = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        cursor?.moveToFirst()
+        return cursor!!.getString(column_index!!)
+    }
+
+    private fun saveDataToFile(pack: String, uri: Uri?) {
         activity!!.contentResolver.openOutputStream(uri!!).use { outputStream ->
-            BufferedWriter(OutputStreamWriter(outputStream)).use { writer ->
-                writer.write(mColony.encode())
-            }
+            mColony.toBitmap().compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+
+            outputStream?.flush()
+            outputStream?.close()
         }
     }
 
     private fun loadDataFromFile(uri: Uri?) {
-        activity!!.contentResolver.openInputStream(uri!!).use { inputStream ->
-            BufferedReader(InputStreamReader(inputStream)).use { reader ->
-                mColony.decode(reader.readText())
-            }
+     activity!!.contentResolver.openInputStream(uri!!).use { inputStream ->
+         var image = BitmapFactory.decodeStream(inputStream)
+         ALIVE = ExifInterface(inputStream).getAttributeInt(ALIVE_TAG, ALIVE)
+         DEAD = ExifInterface(inputStream).getAttributeInt(DEAD_TAG, DEAD)
+         mColony.fromBitmap(image)
         }
-
         updateUI()
     }
 }
