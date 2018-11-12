@@ -9,4 +9,6 @@
     <string name="color_picker_alive">Change Alive Color</string>
     <string name="color_picker_dead">Change Dead Color</string>
     <string name="clone_activity">Clone Game</string>
+    <string name="slider_slow">Slow</string>
+    <string name="slider_fast">Fast</string>
 </resources>

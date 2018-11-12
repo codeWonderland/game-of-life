@@ -15,11 +15,22 @@ import us.cyosp.codewonderland.project_2.R
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.Button
+import android.widget.SeekBar
 import us.cyosp.codewonderland.project_2.model.*
 import java.util.*
 import top.defaults.colorpicker.ColorPickerPopup
 import java.io.*
 import us.cyosp.codewonderland.project_2.util.ColorConverter
+import android.widget.Toast
+import android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS
+import android.provider.Settings.System.SCREEN_BRIGHTNESS
+import android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
+import android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE
+import android.provider.Settings.System.canWrite
+
+
+
+
 
 class ColonyRecyclerFragment : Fragment() {
 
@@ -44,7 +55,7 @@ class ColonyRecyclerFragment : Fragment() {
         var sOpactiy: Int = MAX_OPACITY
 
         // Time delay before init //
-        var sTimerDelay: Long = 200
+        var sTimerDelay: Long = 100
 
         // Time in between each iteration //
         var sTimerPeriod: Long = 200
@@ -85,6 +96,8 @@ class ColonyRecyclerFragment : Fragment() {
     // Reset Button //
     // -Resets simulation
     private var mResetButton: Button? = null
+
+    private var mSlider: SeekBar? = null
 
     // Called on creation //
     // -Sets view to have a menu
@@ -175,11 +188,34 @@ class ColonyRecyclerFragment : Fragment() {
             fragmentManager!!.beginTransaction().replace(R.id.fragment_container, ColonyRecyclerFragment()).commit()
         }
 
-        // Update UI //
-        updateUI()
+        mSlider = view.findViewById(R.id.slider_sim_rate) as SeekBar
+        mSlider!!.progress = ((mSlider!!.max + 1) - (sTimerPeriod.toInt() / 100))
 
-        return view
-    }
+        mSlider!!.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            var period = sTimerPeriod
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                period = (((mSlider!!.max + 1) - progress) * 100).toLong()
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                sTimerPeriod = period
+                if (mRunning) {
+                    mTimer?.cancel()
+                    mTimer = Timer()
+                    run()
+                }
+            }
+        })
+
+            // Update UI //
+            updateUI()
+
+            return view
+        }
 
     // On create for menu //
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
@@ -386,7 +422,7 @@ class ColonyRecyclerFragment : Fragment() {
         // Start a new timer //
         // -Stats after given mTimerDelay
         // -Delay between iterations are mTimerPeriod
-        mTimer!!.scheduleAtFixedRate(object : TimerTask() {
+        mTimer!!.schedule(object : TimerTask() {
             override fun run() {
                 // Update colony for next genoration //
                 // TODO: Handle if all cells die to aging
