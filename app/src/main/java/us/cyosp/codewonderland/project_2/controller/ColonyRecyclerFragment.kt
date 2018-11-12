@@ -1,14 +1,11 @@
 package us.cyosp.codewonderland.project_2.controller
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.GridLayoutManager
 import us.cyosp.codewonderland.project_2.R
@@ -21,39 +18,14 @@ import java.util.*
 import top.defaults.colorpicker.ColorPickerPopup
 import java.io.*
 import us.cyosp.codewonderland.project_2.util.ColorConverter
-import android.widget.Toast
-import android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS
-import android.provider.Settings.System.SCREEN_BRIGHTNESS
-import android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
-import android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE
-import android.provider.Settings.System.canWrite
-
-
-
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.EditText
 
 
 class ColonyRecyclerFragment : Fragment() {
 
     companion object {
-        var ALIVE: Int = Color.GREEN
-        var DEAD: Int = Color.GRAY
-
-        // the lower the number, the faster the pulse
-        // make sure the number divides 100 evenly
-        private const val MAX_OPACITY = 5
-
-        // SHOULD ALWAYS STAY 0
-        private const val MIN_OPACITY = 0
-
-        // determines if we should be
-        // incrementing or decrementing
-        // the current opacity
-        private var sOpRising = false
-
-        // current opacity in percent
-        // divided by 10 for easy updates
-        var sOpactiy: Int = MAX_OPACITY
-
         // Time delay before init //
         var sTimerDelay: Long = 100
 
@@ -71,18 +43,13 @@ class ColonyRecyclerFragment : Fragment() {
     // Timer for game loop //
     private var mTimer: Timer? = null
 
-
-    // Width and Height of grid //
-    private var mRowCount = 20
-    private var mColCount = 20
-
     // Cell life span //
     private var mLifeSpan = 20
 
     // Colony of cells //
     // -Grid with given width and height
     // -Given life span for each cell
-    private var mColony = Colony(mRowCount, mColCount)
+    private var mColony = Colony()
 
     // Colony grid recycler view //
     private var mColonyRecyclerView: RecyclerView? = null
@@ -98,6 +65,10 @@ class ColonyRecyclerFragment : Fragment() {
     private var mResetButton: Button? = null
 
     private var mSlider: SeekBar? = null
+
+    private var mWidthTextField: EditText? = null
+
+    private var mHeightTextField: EditText? = null
 
     // Called on creation //
     // -Sets view to have a menu
@@ -129,7 +100,7 @@ class ColonyRecyclerFragment : Fragment() {
         // Initialize RecyclerView //
         mColonyRecyclerView = view
             .findViewById(R.id.colony_recycler_view) as RecyclerView
-        mColonyRecyclerView!!.layoutManager = GridLayoutManager(activity, mColCount)
+        mColonyRecyclerView!!.layoutManager = GridLayoutManager(activity, Colony.sColCount)
 
         // Set cell divider horizontally //
         mColonyRecyclerView!!.addItemDecoration(DividerItemDecoration(activity,
@@ -211,6 +182,48 @@ class ColonyRecyclerFragment : Fragment() {
             }
         })
 
+        mWidthTextField = view.findViewById(R.id.edit_text_width)
+
+        mWidthTextField!!.hint = Colony.sColCount.toString()
+
+        mWidthTextField!!.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                Colony.sColCount = s.toString().toInt()
+
+                val intent = MainActivity().newIntent(context!!, Colony())
+                activity!!.startActivity(intent)
+            }
+
+            override fun afterTextChanged(s: Editable) {
+
+            }
+        })
+
+        mHeightTextField = view.findViewById(R.id.edit_text_height)
+
+        mHeightTextField!!.hint = Colony.sRowCount.toString()
+
+        mHeightTextField!!.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                Colony.sRowCount = s.toString().toInt()
+
+                val intent = MainActivity().newIntent(context!!, Colony())
+                activity!!.startActivity(intent)
+            }
+
+            override fun afterTextChanged(s: Editable) {
+
+            }
+        })
+
             // Update UI //
             updateUI()
 
@@ -237,12 +250,12 @@ class ColonyRecyclerFragment : Fragment() {
 
             // Color Picker Alive option selected //
             R.id.color_picker_alive -> {
-                pickColor(ALIVE.toString(), ALIVE)
+                pickColor(Colony.sAliveColor.toString(), Colony.sAliveColor)
             }
 
             // Color Picker Dead option selected //
             R.id.color_picker_dead -> {
-                pickColor(DEAD.toString(), DEAD)
+                pickColor(Colony.sDeadColor.toString(), Colony.sDeadColor)
             }
 
             // Save option selected //
@@ -290,7 +303,7 @@ class ColonyRecyclerFragment : Fragment() {
         // Constructor //
         init {
             // Create a new default Cell
-            mCell = Cell(DEAD)
+            mCell = Cell(Colony.sDeadColor)
 
             // Set Recycler cell to have onClick option //
             itemView.setOnClickListener(this)
@@ -322,12 +335,12 @@ class ColonyRecyclerFragment : Fragment() {
         fun updateColor() {
             // Update opacity of living cells
             val aliveColor = ColorConverter.convertIntoColor(
-                ColonyRecyclerFragment.ALIVE,
-                ColonyRecyclerFragment.sOpactiy * (100 / MAX_OPACITY)
+                Colony.sAliveColor,
+                Colony.sOpacity * (100 / Colony.MAX_OPACITY)
             )
 
             mCell.mColor = if(mCell.mAlive) aliveColor
-                            else ColonyRecyclerFragment.DEAD
+                            else Colony.sDeadColor
             // Set cell color //
             itemView.setBackgroundColor(mCell.mColor)
         }
@@ -341,7 +354,7 @@ class ColonyRecyclerFragment : Fragment() {
         override fun getItemCount(): Int {
 
             // Width * Height //
-            return mRowCount * mColCount
+            return Colony.sRowCount * Colony.sColCount
         }
 
         // Creation initializer for Adapter //
@@ -354,8 +367,8 @@ class ColonyRecyclerFragment : Fragment() {
         override fun onBindViewHolder(holder: CellView, position: Int) {
 
             // Get x and y coordinate for cell //
-            val y = position / mRowCount
-            val x = position % mColCount
+            val y = position / Colony.sRowCount
+            val x = position % Colony.sColCount
 
             // Bind cell in colony at coordinate to view //
             holder.bind(mColony.extract()[x][y])
@@ -387,17 +400,17 @@ class ColonyRecyclerFragment : Fragment() {
 
     // Run colony life update //
     private fun updateColony(): Boolean {
-        if (sOpactiy == MAX_OPACITY) {
-            sOpRising = false
+        if (Colony.sOpacity == Colony.MAX_OPACITY) {
+            Colony.sOpRising = false
 
-        } else if (sOpactiy == MIN_OPACITY) {
-            sOpRising = true
+        } else if (Colony.sOpacity == Colony.MIN_OPACITY) {
+            Colony.sOpRising = true
         }
-        sOpactiy = if (sOpRising) {
-            ++sOpactiy
+        Colony.sOpacity = if (Colony.sOpRising) {
+            ++Colony.sOpacity
 
         } else {
-            --sOpactiy
+            --Colony.sOpacity
         }
 
         // Get all living neighbors and set next generation for given set //
@@ -491,8 +504,8 @@ class ColonyRecyclerFragment : Fragment() {
 
     private fun changeColor(name: String, color: Int) {
         when(name) {
-            ALIVE.toString() -> ALIVE = color
-            DEAD.toString() -> DEAD = color
+            Colony.sAliveColor.toString() -> Colony.sAliveColor = color
+            Colony.sDeadColor.toString() -> Colony.sDeadColor = color
         }
 
         mColony.updateColors()

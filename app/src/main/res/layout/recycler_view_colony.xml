@@ -39,7 +39,38 @@
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:text="@string/slider_fast"/>
     </LinearLayout>
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                      android:text="@string/tt_width"/>
+            <EditText
+                    android:id="@+id/edit_text_width"
+                    android:layout_width="81dp"
+                    android:layout_height="wrap_content"
+                    android:tooltipText="@string/tt_width"
+                    android:hint="@string/tt_width"
+                    android:textAlignment="center"
+                    android:inputType="number"/>
+        </LinearLayout>
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                      android:text="@string/tt_height"/>
 
-
+            <EditText
+                    android:id="@+id/edit_text_height"
+                    android:layout_width="81dp"
+                    android:layout_height="wrap_content"
+                    android:tooltipText="@string/tt_height"
+                    android:hint="@string/tt_height"
+                    android:textAlignment="center"
+                    android:inputType="number"/>
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>
 

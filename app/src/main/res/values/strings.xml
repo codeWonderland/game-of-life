@@ -11,4 +11,6 @@
     <string name="clone_activity">Clone Game</string>
     <string name="slider_slow">Slow</string>
     <string name="slider_fast">Fast</string>
+    <string name="tt_height">Height</string>
+    <string name="tt_width">Width</string>
 </resources>

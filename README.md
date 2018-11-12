@@ -13,5 +13,5 @@ Conway's Game of Life in Kotlin on Android
 
 ## Todo
 - Save data to server
-- Send image over email
+- Send image over email/text
 - Change grid size
