@@ -40,6 +40,7 @@ class ColonyRecyclerFragment : Fragment() {
     companion object {
         var ALIVE_TAG = "alive_color"
         var DEAD_TAG = "dead_color"
+        var JSON_DATA= "json_data"
         var ALIVE: Int = Color.GREEN
         var DEAD: Int = Color.GRAY
 
@@ -227,37 +228,7 @@ class ColonyRecyclerFragment : Fragment() {
 
             // Save option selected //
             R.id.save -> {
-                createFile("image/jpeg", "Untitled")
-
-                /*        var result: String? = null;
-         if (uri.scheme == ("content")) {
-             var cursor = activity!!.contentResolver.query(uri, null, null, null, null)
-             try {
-               if (cursor != null && cursor.moveToFirst()) {
-                 result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-               }
-             } finally {
-               cursor?.close()
-             }
-           }
-           if (result == null) {
-             result = uri.path
-             var cut = result.lastIndexOf('/')
-             if (cut != -1) {
-               result = result.substring(cut + 1)
-             }
-           }
-
-         var path = "$pack${uri.path}"
-         Log.d("Save Data File", path)*/
-
-                /* val proj = arrayOf(Environment.DIRECTORY_PICTURES)
-                 val cursor = context!!.contentResolver.query(uri, proj, null, null, null)
-                 val column_index = cursor!!.getColumnIndexOrThrow(Environment.DIRECTORY_PICTURES)
-                 cursor.moveToFirst()
-                 ExifInterface(cursor.getString(column_index)).setAttribute(ALIVE_TAG, ALIVE.toString())
-                 ExifInterface(cursor.getString(column_index)).setAttribute(DEAD_TAG, DEAD.toString())
-                 cursor.close()*/
+                createFile("image/jpg", "Untitled")
             }
 
             // Load option selected //
@@ -383,8 +354,7 @@ class ColonyRecyclerFragment : Fragment() {
                 }
                 WRITE_REQUEST_CODE -> {
                     resultData?.data?.also {uri ->
-                        var dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                        saveDataToFile(dir.path, uri)
+                        saveDataToFile(uri)
                     }
                 }
                 DELETE_REQUEST_CODE -> {
@@ -507,29 +477,29 @@ class ColonyRecyclerFragment : Fragment() {
         updateUI()
     }
 
-    fun getPath(uri: Uri): String {
-        val projection = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = activity!!.contentResolver.query(uri, projection, null, null, null)
-        val column_index = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-        cursor?.moveToFirst()
-        return cursor!!.getString(column_index!!)
-    }
-
-    private fun saveDataToFile(pack: String, uri: Uri?) {
+    private fun saveDataToFile(uri: Uri?) {
         activity!!.contentResolver.openOutputStream(uri!!).use { outputStream ->
-            mColony.toBitmap().compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-
+            mColony.toBitmap().compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
             outputStream?.flush()
             outputStream?.close()
         }
+        activity!!.contentResolver.openFileDescriptor(uri, "rw")?.use {
+            var data = mColony.encode() + ":" + ALIVE.toString() + ":" + DEAD.toString()
+            ExifInterface(it.fileDescriptor).setAttribute(ExifInterface.TAG_IMAGE_DESCRIPTION, data)
+            ExifInterface(it.fileDescriptor).saveAttributes()
+        }
+
     }
 
     private fun loadDataFromFile(uri: Uri?) {
      activity!!.contentResolver.openInputStream(uri!!).use { inputStream ->
          var image = BitmapFactory.decodeStream(inputStream)
-         ALIVE = ExifInterface(inputStream).getAttributeInt(ALIVE_TAG, ALIVE)
-         DEAD = ExifInterface(inputStream).getAttributeInt(DEAD_TAG, DEAD)
-         mColony.fromBitmap(image)
+         var fd = activity!!.contentResolver.openFileDescriptor(uri, "rw")?.fileDescriptor
+         var data = ExifInterface(fd).getAttribute(ExifInterface.TAG_IMAGE_DESCRIPTION)
+         var newData = data.split(":")
+         mColony.decode(newData[0])
+         ALIVE = newData[1].toInt()
+         DEAD = newData[2].toInt()
         }
         updateUI()
     }
