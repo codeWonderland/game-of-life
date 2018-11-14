@@ -12,11 +12,15 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val COLONY_DATA_ID = "colony_data"
+        const val COLONY_WIDTH_ID = "colony_width"
+        const val COLONY_HEIGHT_ID = "colony_height"
     }
 
     fun newIntent(packageContext: Context, colony: Colony): Intent {
         val intent = Intent(packageContext, MainActivity::class.java)
         intent.putExtra(COLONY_DATA_ID, colony.encode())
+        intent.putExtra(COLONY_HEIGHT_ID, colony.mHeight)
+        intent.putExtra(COLONY_WIDTH_ID, colony.mWidth)
         return intent
     }
 
@@ -26,18 +30,29 @@ class MainActivity : AppCompatActivity() {
 
         // check for colony data from intent
         val colonyData: String? = this.intent?.extras?.getString(COLONY_DATA_ID)
+        val colonyWidth: Int? = this.intent?.extras?.getInt(COLONY_WIDTH_ID)
+        val colonyHeight: Int? = this.intent?.extras?.getInt(COLONY_HEIGHT_ID)
 
         val fm = supportFragmentManager
         var fragment: Fragment? = fm.findFragmentById(R.id.fragment_container)
 
         if (fragment == null) {
+            // create new Bundle
+            val bundle = Bundle()
 
             // if we have colony data, we pass it to the fragment
             if (colonyData != null) {
-                // create new Bundle
-                val bundle = Bundle()
+
                 // put the colony data into bundle
                 bundle.putString(COLONY_DATA_ID, colonyData)
+
+                if (colonyWidth != null) {
+                    bundle.putInt(COLONY_WIDTH_ID, colonyWidth)
+                }
+
+                if (colonyHeight != null) {
+                    bundle.putInt(COLONY_HEIGHT_ID, colonyHeight)
+                }
 
                 // establish fragment
                 fragment = ColonyRecyclerFragment()

@@ -3,7 +3,7 @@ package us.cyosp.codewonderland.project_2.model
 import android.graphics.Color
 import com.google.gson.Gson
 
-class Colony {
+class Colony(width: Int, height: Int) {
 
     companion object {
         var sAliveColor: Int = Color.GREEN
@@ -26,13 +26,14 @@ class Colony {
         var sOpacity: Int = MAX_OPACITY
 
         // Width and Height of grid //
-        var sRowCount = 20
-        var sColCount = 20
+
     }
+    var mHeight = height
+    var mWidth = width
 
     // Grid of cells //
     // -Initialized with given data //
-    private var mCells =  Array(sRowCount) { Array(sColCount) { Cell(sDeadColor) }}
+    private var mCells =  Array(mHeight) { Array(mWidth) { Cell(sDeadColor) }}
 
     // Get grid of cells //
     fun extract(): Array<Array<Cell>> {
@@ -40,8 +41,8 @@ class Colony {
     }
 
     fun updateColors() {
-        for (i in 0 until sRowCount) {
-            for (j in 0 until sColCount) {
+        for (i in 0 until mHeight) {
+            for (j in 0 until mWidth) {
                 mCells[i][j].mColor =
                         if (mCells[i][j].mAlive) sAliveColor
                         else sDeadColor
@@ -55,29 +56,29 @@ class Colony {
 
         // Initialize grid for living neighbors //
         // -Default set to zero
-        val livingNeighborsCount = Array(sRowCount) { Array(sColCount) { 0 } }
+        val livingNeighborsCount = Array(mHeight) { Array(mWidth) { 0 } }
 
         // Counts the number of neighbors a cell has and stores it in the array
-        for (i in 0 until sRowCount) {
-            for (j in 0 until sColCount) {
+        for (i in 0 until mHeight) {
+            for (j in 0 until mWidth) {
 
                 // Variables to save positions left and right of row and column
-                val leftOfRow = i + sRowCount - 1
+                val leftOfRow = i + mHeight - 1
                 val rightOfRow = i + 1
-                val leftOfColumn = j + sColCount - 1
+                val leftOfColumn = j + mWidth - 1
                 val rightOfColumn = j + 1
 
                 // Checks to see if the cells are alive or dead. If they are alive
                 // it increments the count for living neighbors.
                 if (this.mCells[i][j].mAlive) {
-                    livingNeighborsCount[leftOfRow % sRowCount][leftOfColumn % sColCount]++
-                    livingNeighborsCount[leftOfRow % sRowCount][j % sColCount]++
-                    livingNeighborsCount[(i + sRowCount - 1) % sRowCount][rightOfColumn % sColCount]++
-                    livingNeighborsCount[i % sRowCount][leftOfColumn % sColCount]++
-                    livingNeighborsCount[i % sRowCount][rightOfColumn % sColCount]++
-                    livingNeighborsCount[rightOfRow % sRowCount][leftOfColumn % sColCount]++
-                    livingNeighborsCount[rightOfRow % sRowCount][j % sColCount]++
-                    livingNeighborsCount[rightOfRow % sRowCount][rightOfColumn % sColCount]++
+                    livingNeighborsCount[leftOfRow % mHeight][leftOfColumn % mWidth]++
+                    livingNeighborsCount[leftOfRow % mHeight][j % mWidth]++
+                    livingNeighborsCount[(i + mHeight - 1) % mHeight][rightOfColumn % mWidth]++
+                    livingNeighborsCount[i % mHeight][leftOfColumn % mWidth]++
+                    livingNeighborsCount[i % mHeight][rightOfColumn % mWidth]++
+                    livingNeighborsCount[rightOfRow % mHeight][leftOfColumn % mWidth]++
+                    livingNeighborsCount[rightOfRow % mHeight][j % mWidth]++
+                    livingNeighborsCount[rightOfRow % mHeight][rightOfColumn % mWidth]++
                 }
             }
         }
@@ -88,8 +89,8 @@ class Colony {
 
     // Run simulation for next generation for given grid of living neighbors //
     fun nextGeneration(livingNeighbors: Array<Array<Int>>): Boolean {
-        for (i in 0 until sRowCount) {
-            for (j in 0 until sColCount) {
+        for (i in 0 until mHeight) {
+            for (j in 0 until mWidth) {
                 // Get count of neighbors for cell //
                 val count = livingNeighbors[i][j]
 
@@ -124,9 +125,9 @@ class Colony {
     }
 
     fun encode(): String {
-        val data = Array(sRowCount) { Array(sColCount) {false}}
-            for(i in 0 until sRowCount) {
-                for (j in 0 until sColCount) {
+        val data = Array(mHeight) { Array(mWidth) {false}}
+            for(i in 0 until mHeight) {
+                for (j in 0 until mWidth) {
                     data[i][j] = this.mCells[i][j].mAlive
             }
         }
@@ -137,16 +138,16 @@ class Colony {
     fun decode(data: String) {
         val dataMap = Gson().fromJson(data, Array<Array<Boolean>>::class.java)
 
-        if (dataMap.size != sRowCount) {
-            sRowCount = dataMap.size
+        if (dataMap.size != mHeight) {
+            mHeight = dataMap.size
         }
 
-        if (dataMap[0].size != sColCount) {
-            sColCount = dataMap[0].size
+        if (dataMap[0].size != mWidth) {
+            mWidth = dataMap[0].size
         }
 
-        for (i in 0 until sRowCount) {
-            for (j in 0 until sColCount) {
+        for (i in 0 until mHeight) {
+            for (j in 0 until mWidth) {
                 this.mCells[i][j].mAlive = dataMap[i][j]
             }
         }

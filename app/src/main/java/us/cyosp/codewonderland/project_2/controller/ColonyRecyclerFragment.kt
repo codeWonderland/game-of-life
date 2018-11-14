@@ -49,7 +49,7 @@ class ColonyRecyclerFragment : Fragment() {
     // Colony of cells //
     // -Grid with given width and height
     // -Given life span for each cell
-    private var mColony = Colony()
+    private var mColony: Colony? = null
 
     // Colony grid recycler view //
     private var mColonyRecyclerView: RecyclerView? = null
@@ -78,11 +78,18 @@ class ColonyRecyclerFragment : Fragment() {
 
         // get available data from arguments
         val colonyData: String? = arguments?.getString(MainActivity.COLONY_DATA_ID)
+        val colonyHeight: Int? = arguments?.getInt(MainActivity.COLONY_HEIGHT_ID)
+        val colonyWidth: Int? = arguments?.getInt(MainActivity.COLONY_WIDTH_ID)
+        if (colonyHeight == null || colonyWidth == null) {
+            mColony = Colony(20, 20)
+        } else {
+            mColony = Colony(colonyWidth, colonyHeight)
+        }
 
         // if we have colony data
         if (colonyData != null) {
             // we decode that information
-            mColony.decode(colonyData)
+            mColony!!.decode(colonyData)
         }
     }
 
@@ -100,7 +107,7 @@ class ColonyRecyclerFragment : Fragment() {
         // Initialize RecyclerView //
         mColonyRecyclerView = view
             .findViewById(R.id.colony_recycler_view) as RecyclerView
-        mColonyRecyclerView!!.layoutManager = GridLayoutManager(activity, Colony.sColCount)
+        mColonyRecyclerView!!.layoutManager = GridLayoutManager(activity, mColony!!.mWidth)
 
         // Set cell divider horizontally //
         mColonyRecyclerView!!.addItemDecoration(DividerItemDecoration(activity,
@@ -184,43 +191,41 @@ class ColonyRecyclerFragment : Fragment() {
 
         mWidthTextField = view.findViewById(R.id.edit_text_width)
 
-        mWidthTextField!!.hint = Colony.sColCount.toString()
+        mWidthTextField!!.hint = mColony!!.mWidth.toString()
 
         mWidthTextField!!.addTextChangedListener(object : TextWatcher {
+            var width: Int = 0
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-
+                width = mColony!!.mWidth
             }
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                Colony.sColCount = s.toString().toInt()
-
-                val intent = MainActivity().newIntent(context!!, Colony())
-                activity!!.startActivity(intent)
+                width = s.toString().toInt()
             }
 
             override fun afterTextChanged(s: Editable) {
-
+                val intent = MainActivity().newIntent(context!!, Colony(width, mColony!!.mHeight))
+                activity!!.startActivity(intent)
             }
         })
 
         mHeightTextField = view.findViewById(R.id.edit_text_height)
 
-        mHeightTextField!!.hint = Colony.sRowCount.toString()
+        mHeightTextField!!.hint = mColony!!.mHeight.toString()
 
         mHeightTextField!!.addTextChangedListener(object : TextWatcher {
+            var height: Int = 0
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-
+                height = mColony!!.mHeight
             }
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                Colony.sRowCount = s.toString().toInt()
-
-                val intent = MainActivity().newIntent(context!!, Colony())
-                activity!!.startActivity(intent)
+                height = s.toString().toInt()
             }
 
             override fun afterTextChanged(s: Editable) {
-
+                val intent = MainActivity().newIntent(context!!, Colony(mColony!!.mWidth, height))
+                activity!!.startActivity(intent)
             }
         })
 
@@ -244,7 +249,7 @@ class ColonyRecyclerFragment : Fragment() {
         when (item!!.itemId) {
 
             R.id.clone_activity -> {
-                val intent = MainActivity().newIntent(context!!, mColony)
+                val intent = MainActivity().newIntent(context!!, mColony!!)
                 activity!!.startActivity(intent)
             }
 
@@ -354,7 +359,7 @@ class ColonyRecyclerFragment : Fragment() {
         override fun getItemCount(): Int {
 
             // Width * Height //
-            return Colony.sRowCount * Colony.sColCount
+            return mColony!!.mHeight * mColony!!.mWidth
         }
 
         // Creation initializer for Adapter //
@@ -367,11 +372,11 @@ class ColonyRecyclerFragment : Fragment() {
         override fun onBindViewHolder(holder: CellView, position: Int) {
 
             // Get x and y coordinate for cell //
-            val y = position / Colony.sRowCount
-            val x = position % Colony.sColCount
+            val y = position / mColony!!.mHeight
+            val x = position % mColony!!.mWidth
 
             // Bind cell in colony at coordinate to view //
-            holder.bind(mColony.extract()[x][y])
+            holder.bind(mColony!!.extract()[x][y])
         }
     }
 
@@ -414,7 +419,7 @@ class ColonyRecyclerFragment : Fragment() {
         }
 
         // Get all living neighbors and set next generation for given set //
-        return mColony.nextGeneration(mColony.getLivingNeighbors())
+        return mColony!!.nextGeneration(mColony!!.getLivingNeighbors())
     }
 
     // Updated UI //
@@ -508,14 +513,14 @@ class ColonyRecyclerFragment : Fragment() {
             Colony.sDeadColor.toString() -> Colony.sDeadColor = color
         }
 
-        mColony.updateColors()
+        mColony!!.updateColors()
         updateUI()
     }
 
     private fun saveDataToFile(uri: Uri?) {
         activity!!.contentResolver.openOutputStream(uri!!).use { outputStream ->
             BufferedWriter(OutputStreamWriter(outputStream)).use { writer ->
-                writer.write(mColony.encode())
+                writer.write(mColony!!.encode())
             }
         }
     }
@@ -523,7 +528,7 @@ class ColonyRecyclerFragment : Fragment() {
     private fun loadDataFromFile(uri: Uri?) {
         activity!!.contentResolver.openInputStream(uri!!).use { inputStream ->
             BufferedReader(InputStreamReader(inputStream)).use { reader ->
-                mColony.decode(reader.readText())
+                mColony!!.decode(reader.readText())
             }
         }
 
