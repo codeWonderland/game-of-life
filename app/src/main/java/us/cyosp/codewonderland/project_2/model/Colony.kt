@@ -1,12 +1,24 @@
 package us.cyosp.codewonderland.project_2.model
 
+/*
+    Project Creators:
+    Dylan Blanchard, Alice Easter
+
+    Project-2: The Game of Life
+ */
+
 import android.graphics.Color
 import com.google.gson.Gson
 
 class Colony(width: Int, height: Int) {
 
     companion object {
+        // Color for alive cells //
+        // - Default Green
         var sAliveColor: Int = Color.GREEN
+
+        // Color for dead cells //
+        // - Default Gray
         var sDeadColor: Int = Color.GRAY
 
         // the lower the number, the faster the pulse
@@ -25,7 +37,10 @@ class Colony(width: Int, height: Int) {
         // divided by 10 for easy updates
         var sOpacity: Int = MAX_OPACITY
 
-        // Width and Height of grid //
+        // Cell life span //
+        // - Change this to make cells live longer
+        // - Currently living 100 generations
+        private var sLifeSpan = 100
 
     }
     var mHeight = height
@@ -40,9 +55,13 @@ class Colony(width: Int, height: Int) {
         return this.mCells
     }
 
+    // Update cell color for each cell //
     fun updateColors() {
         for (i in 0 until mHeight) {
             for (j in 0 until mWidth) {
+                // Set color for cell state //
+                // - Alive color if alive
+                // - Dead color if dead
                 mCells[i][j].mColor =
                         if (mCells[i][j].mAlive) sAliveColor
                         else sDeadColor
@@ -51,7 +70,6 @@ class Colony(width: Int, height: Int) {
     }
 
     // Get grid of living neighbors for colony //
-    // TODO: Stretch Goal - Living neighbors function
     fun getLivingNeighbors(): Array<Array<Int>> {
 
         // Initialize grid for living neighbors //
@@ -111,41 +129,65 @@ class Colony(width: Int, height: Int) {
                     // -Ignored
                 }
 
-                // TODO: Turn this on after testing
-                // lifespan code works, but doesn't help to test
-                // increment age of cell //
-                //this.mCells[i][j].age()
+                if (mCells[i][j].mAge >= sLifeSpan) {
+                    mCells[i][j].mAlive = false
+                } else {
+                    mCells[i][j].mAge++
+                }
             }
         }
 
-        // Return if any cells are still alive //
-        // TODO: Implement check for if cells are still alive
-        // -This is to help make death due to age clearer
-        return true
+        // Check if any cells are still alive //
+        for (i in 0 until mHeight) {
+            for (j in 0 until mWidth) {
+                // Check if cell is alive //
+                if (mCells[i][j].mAlive) {
+                    // Cells are still alive //
+                    return true
+                }
+            }
+        }
+        // No cells are alive //
+        // - Reset sim
+        return false
     }
 
+    // Encode colony data to JSON //
+    // - Returns JSON string
     fun encode(): String {
+        // Crate temp array for cell state //
         val data = Array(mHeight) { Array(mWidth) {false}}
-            for(i in 0 until mHeight) {
-                for (j in 0 until mWidth) {
-                    data[i][j] = this.mCells[i][j].mAlive
+
+        for(i in 0 until mHeight) {
+            for (j in 0 until mWidth) {
+                // Set cell state to temp array //
+                data[i][j] = this.mCells[i][j].mAlive
             }
         }
 
+        // Convert array of Boolean states to JSON //
+        // - Returns JSON string
         return Gson().toJson(data)
     }
 
+    // Decode JSON string to colony data //
     fun decode(data: String) {
+        // Decode JSON string to Boolean Grid //
         val dataMap = Gson().fromJson(data, Array<Array<Boolean>>::class.java)
 
+        // Check array size to see if grid size matches //
+        // Note: This is not needed as width and height change code does not work
         if (dataMap.size != mHeight) {
             mHeight = dataMap.size
         }
 
+        // Check array width if grid size matches //
+        // Note: This is not needed as width and height change code does not work
         if (dataMap[0].size != mWidth) {
             mWidth = dataMap[0].size
         }
 
+        // Set cell state to given state from JSON string //
         for (i in 0 until mHeight) {
             for (j in 0 until mWidth) {
                 this.mCells[i][j].mAlive = dataMap[i][j]

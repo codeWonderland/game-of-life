@@ -1,5 +1,12 @@
 package us.cyosp.codewonderland.project_2.controller
 
+/*
+    Project Creators:
+    Dylan Blanchard, Alice Easter
+
+    Project-2: The Game of Life
+ */
+
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -32,9 +39,12 @@ class ColonyRecyclerFragment : Fragment() {
         // Time in between each iteration //
         var sTimerPeriod: Long = 200
 
+        // Static IDs for menu actions //
         private const val READ_REQUEST_CODE: Int = 42
         private const val WRITE_REQUEST_CODE: Int = 43
         private const val DELETE_REQUEST_CODE: Int = 44
+
+        private const val FILE_TYPE: String = "pattern/file"
     }
 
     // Running flag for button toggle //
@@ -43,9 +53,6 @@ class ColonyRecyclerFragment : Fragment() {
     // Timer for game loop //
     private var mTimer: Timer? = null
 
-    // Cell life span //
-    private var mLifeSpan = 20
-
     // Colony of cells //
     // -Grid with given width and height
     // -Given life span for each cell
@@ -53,21 +60,27 @@ class ColonyRecyclerFragment : Fragment() {
 
     // Colony grid recycler view //
     private var mColonyRecyclerView: RecyclerView? = null
+
     // Recycler view adapter //
     private var mAdapter: ColonyAdapter? = null
 
     // Run Button //
     // -Toggles run and stop for main game loop
-
     private var mRunButton: Button? = null
+
     // Reset Button //
     // -Resets simulation
     private var mResetButton: Button? = null
 
+    // Speed Slider //
+    // - Change sim rate speed
     private var mSlider: SeekBar? = null
 
+    // Edit grid width text input //
+    // NOTE: This currently does not work.
+    //    code left in to show what we were trying to do
+    //    but we could not get activity to recreate it self.
     private var mWidthTextField: EditText? = null
-
     private var mHeightTextField: EditText? = null
 
     // Called on creation //
@@ -76,19 +89,26 @@ class ColonyRecyclerFragment : Fragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
 
-        // get available data from arguments
+        // get available data from  //
+        // - Colony data as JSON string
+        // - grid height
+        // - grid width
         val colonyData: String? = arguments?.getString(MainActivity.COLONY_DATA_ID)
         val colonyHeight: Int? = arguments?.getInt(MainActivity.COLONY_HEIGHT_ID)
         val colonyWidth: Int? = arguments?.getInt(MainActivity.COLONY_WIDTH_ID)
+
+        // Set grid width and height //
         if (colonyHeight == null || colonyWidth == null) {
+            // Create colony width and height default 20x20 //
             mColony = Colony(20, 20)
         } else {
+            // Create colony width and height as given //
             mColony = Colony(colonyWidth, colonyHeight)
         }
 
-        // if we have colony data
+        // if we have colony data //
         if (colonyData != null) {
-            // we decode that information
+            // we decode that information //
             mColony!!.decode(colonyData)
         }
     }
@@ -166,29 +186,57 @@ class ColonyRecyclerFragment : Fragment() {
             fragmentManager!!.beginTransaction().replace(R.id.fragment_container, ColonyRecyclerFragment()).commit()
         }
 
+        // Initialize Speed Slider //
         mSlider = view.findViewById(R.id.slider_sim_rate) as SeekBar
+
+        // Set slider to current speed //
+        // - Speed between 1s - 10s
+        // - Takes slider max + 1 and subtracts by current time period converted to seconds from milliseconds
+        // - Max + 1 is to prevent the speed being set to 0 if time is set to max of slider (10s / 10,000ms)
         mSlider!!.progress = ((mSlider!!.max + 1) - (sTimerPeriod.toInt() / 100))
 
+        // Set onChangeListener for slider //
         mSlider!!.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            // Current time //
+            // - Set to current time period
             var period = sTimerPeriod
+
+            // On change of slider //
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                // Change time period to new period selected //
+                // - Takes max of slider + 1 and subtracts current progress (1-10) then converts to ms and to long
+                // - max + 1 to prevent data from going to 0
+                // - subtracting progress to flip value as the slider view shows slow to fast
+                //      but slider progress would make it fast to slow.
                 period = (((mSlider!!.max + 1) - progress) * 100).toLong()
             }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            // Required overload for slider action //
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
 
-            }
-
+            // Set current time delay to new time delay on release of click //
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                // Change timer delay to new delay //
                 sTimerPeriod = period
+
+                // Check if sim is running //
                 if (mRunning) {
+                    // Stop timer to change delay //
                     mTimer?.cancel()
+
+                    // Create new timer for new delay //
                     mTimer = Timer()
+
+                    // Restart sim //
                     run()
                 }
             }
         })
 
+        /*
+            This section of code is only left in for example of what we were trying to do.
+            We could not get the change of width and height to work.
+         */
         mWidthTextField = view.findViewById(R.id.edit_text_width)
 
         mWidthTextField!!.hint = mColony!!.mWidth.toString()
@@ -239,7 +287,6 @@ class ColonyRecyclerFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater!!.inflate(R.menu.menu_fragment, menu)
-        // Todo: Add on create stuff for menu if needed. Remove TODO if not needed
     }
 
     // Item select action on menu //
@@ -265,7 +312,7 @@ class ColonyRecyclerFragment : Fragment() {
 
             // Save option selected //
             R.id.save -> {
-                createFile("patter/file", "Untitled")
+                createFile(FILE_TYPE, "Untitled")
             }
 
             // Load option selected //
@@ -380,22 +427,33 @@ class ColonyRecyclerFragment : Fragment() {
         }
     }
 
-
+    // On result from menu //
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+        // Check result is ok //
         if (resultCode == Activity.RESULT_OK) {
+            // Check which menu item was selected //
             when(requestCode) {
+                // Read pattern from given file //
                 READ_REQUEST_CODE -> {
+                    // Get data from URI //
                     resultData?.data?.also { uri ->
+                        // Load data from file //
                         loadDataFromFile(uri)
                     }
                 }
+                // Write patter to file //
                 WRITE_REQUEST_CODE -> {
+                    // Get file from URI //
                     resultData?.data?.also {uri ->
+                        // Save data to file //
                         saveDataToFile(uri)
                     }
                 }
+                // Delete given file //
                 DELETE_REQUEST_CODE -> {
+                    // Get file from URI //
                     resultData?.data?.also { uri ->
+                        // Delete file //
                         DocumentsContract.deleteDocument(activity!!.contentResolver, uri)
                     }
                 }
@@ -442,9 +500,29 @@ class ColonyRecyclerFragment : Fragment() {
         // -Delay between iterations are mTimerPeriod
         mTimer!!.schedule(object : TimerTask() {
             override fun run() {
-                // Update colony for next genoration //
-                // TODO: Handle if all cells die to aging
+                // Update colony for next generation //
+                // - gets if any cells are still alive
                 val stillAlive = updateColony()
+
+                // Check if any cells are still alive //
+                if (!stillAlive) {
+                    // Stop game loop if running //
+                    mTimer?.cancel()
+
+                    activity!!.runOnUiThread{
+                        // Change Run Button text if needed to reflect state //
+                        if (mRunButton!!.text == activity!!.getText(R.string.stop_sim)) {
+                            mRunButton!!.text = activity!!.getText(R.string.run_sim)
+                            // Change to not running if running //
+                            if (mRunning) {
+                                mRunning = false
+                            }
+                        }
+                    }
+
+                    // Reload view //
+                    fragmentManager!!.beginTransaction().replace(R.id.fragment_container, ColonyRecyclerFragment()).commit()
+                }
 
                 // Update UI //
                 updateUI()
@@ -452,7 +530,9 @@ class ColonyRecyclerFragment : Fragment() {
         }, sTimerDelay, sTimerPeriod)
     }
 
+    // Pick color from color picker //
     private fun pickColor(name: String, preColor: Int) {
+        // Create color picker //
         ColorPickerPopup.Builder(activity)
             .initialColor(preColor) // Set initial color
             .enableBrightness(true) // Enable brightness slider or not
@@ -463,75 +543,114 @@ class ColonyRecyclerFragment : Fragment() {
             .showValue(true)
             .build()
             .show(object : ColorPickerPopup.ColorPickerObserver {
+                // OnPickColor form color picker //
                 override fun onColorPicked(color: Int) {
+                    // Change color for cells //
                     changeColor(name, color)
                 }
 
-                override fun onColor(color: Int, fromUser: Boolean) {
-                    // TODO: Determine necessity
-                }
+                // Needed override for color picker //
+                override fun onColor(color: Int, fromUser: Boolean) {}
             })
     }
 
+    // Get files for file picker //
     private fun pickFile() {
+        // Create file picker //
+        // - Open Document Action
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            // Only get files that can be opened //
             addCategory(Intent.CATEGORY_OPENABLE)
 
-            type = "*/*"
+            // Files of any type //
+            type = FILE_TYPE
         }
 
+        // Start file picker intent //
         startActivityForResult(intent, READ_REQUEST_CODE)
     }
 
+    // Create files for file picker //
     private fun createFile(mimeType: String, fileName: String) {
+        // Create file picker //
+        // - Create Document Action
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-            // Filter to only show results that can be "opened", such as
-            // a file (as opposed to a list of contacts or timezones).
+            // Only get files that can be opened //
             addCategory(Intent.CATEGORY_OPENABLE)
 
-            // Create a file with the requested MIME type.
+            // Create a file with the requested MIME type //
             type = mimeType
+
+            // Give intent file name as title //
             putExtra(Intent.EXTRA_TITLE, fileName)
         }
 
+        // Start file picker intent //
         startActivityForResult(intent, WRITE_REQUEST_CODE)
     }
 
+    // Delete file for file picker //
     private fun deleteFile() {
+        // Create file picker //
+        // - Open Document Action
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            // Only get files that can be opened //
             addCategory(Intent.CATEGORY_OPENABLE)
 
-            type = "*/*"
+            // Get file for given file type //
+            type = FILE_TYPE
         }
 
+        // Start file picker intent //
         startActivityForResult(intent, DELETE_REQUEST_CODE)
     }
 
+    // Change color for given cell type //
+    // - Name of type (Alive, Dead)
+    // - New color
     private fun changeColor(name: String, color: Int) {
+        // For given name //
         when(name) {
+            // Set alive color //
             Colony.sAliveColor.toString() -> Colony.sAliveColor = color
+
+            // Set dead color //
             Colony.sDeadColor.toString() -> Colony.sDeadColor = color
         }
 
+        // Update colors for cells //
         mColony!!.updateColors()
+
+        // Update UI //
         updateUI()
     }
 
+    // Save data to given file //
     private fun saveDataToFile(uri: Uri?) {
+        // Create file output stream for URI //
         activity!!.contentResolver.openOutputStream(uri!!).use { outputStream ->
+            // Create writer for given stream //
             BufferedWriter(OutputStreamWriter(outputStream)).use { writer ->
+                // Write data to file //
+                // - Colony data encoded to JSON
                 writer.write(mColony!!.encode())
             }
         }
     }
 
+    // Load data from given file //
     private fun loadDataFromFile(uri: Uri?) {
+        // Create file input stream for URI //
         activity!!.contentResolver.openInputStream(uri!!).use { inputStream ->
+            // Create reader for stream //
             BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                // Read data from file //
+                // - Decode JSON data to Colony
                 mColony!!.decode(reader.readText())
             }
         }
 
+        // Update UI //
         updateUI()
     }
 }
